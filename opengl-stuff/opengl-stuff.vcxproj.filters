@@ -51,18 +51,6 @@
     <ClCompile Include="src\midifile\Binasc.cpp">
       <Filter>Arquivos de Origem\dependencies</Filter>
     </ClCompile>
-    <ClCompile Include="src\midifile\MidiEvent.cpp">
-      <Filter>Arquivos de Origem\dependencies</Filter>
-    </ClCompile>
-    <ClCompile Include="src\midifile\MidiEventList.cpp">
-      <Filter>Arquivos de Origem\dependencies</Filter>
-    </ClCompile>
-    <ClCompile Include="src\midifile\MidiFile.cpp">
-      <Filter>Arquivos de Origem\dependencies</Filter>
-    </ClCompile>
-    <ClCompile Include="src\midifile\MidiMessage.cpp">
-      <Filter>Arquivos de Origem\dependencies</Filter>
-    </ClCompile>
     <ClCompile Include="include\light_stripe.hpp">
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClCompile>
