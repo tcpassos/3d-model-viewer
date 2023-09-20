@@ -7,6 +7,33 @@
 #include "scene.h"
 #include "sound.h"
 #include "game_info.h"
+#include "rectangle_shape.hpp"
+
+void render(GLFWwindow* window) {
+
+    RectangleShape shape(400, 300);
+    shape.setColor(glm::vec4(1.0));
+
+    while (!glfwWindowShouldClose(window)) {
+
+        // Check events
+        glfwPollEvents();
+
+        // Clear color buffer
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // ==========================================================
+
+        shape.getProjection()->moveX(0.01f);
+        shape.draw(window);
+
+        // ==========================================================
+
+        // Switch buffers
+        glfwSwapBuffers(window);
+    }
+}
 
 int main(void) {
     glfwInit();
@@ -36,6 +63,7 @@ int main(void) {
     // stbi_image_free(icons[0].pixels);
 
     // Run app...
+    render(window);
 
     // Delete all resources as loaded using the resource manager
     ResourceManager::clear();

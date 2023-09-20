@@ -48,9 +48,6 @@
     <ClCompile Include="src\sound.cpp">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
-    <ClCompile Include="src\midifile\Binasc.cpp">
-      <Filter>Arquivos de Origem\dependencies</Filter>
-    </ClCompile>
     <ClCompile Include="include\light_stripe.hpp">
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClCompile>
