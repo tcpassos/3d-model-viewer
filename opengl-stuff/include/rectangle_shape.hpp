@@ -21,7 +21,8 @@ private:
         glfwGetWindowSize(window, &width, &height);
 
         // Prepare matrices
-        glm::mat4 projection = getProjectionMatrix(width, height);
+        // glm::mat4 projection = getProjectionMatrix(width, height);
+        glm::mat4 projection = getCamera()->getViewMatrix();
         glm::mat4 model = getModelMatrix();
 
         // Prepare shader

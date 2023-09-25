@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "camera.hpp"
 #include "projection.h"
 
 class Transformable {
@@ -58,6 +59,10 @@ public:
         this->preserveModel = preserveModel;
     }
 
+    void setCamera(Camera& camera) {
+        this->camera = &camera;
+    }
+
     glm::vec2 getPosition() {
         return this->position;
     }
@@ -76,6 +81,10 @@ public:
 
     Projection* getProjection() {
         return this->projection;
+    }
+
+    Camera* getCamera() {
+        return this->camera;
     }
 
     void move(float x, float y) {
@@ -100,5 +109,6 @@ protected:
 	glm::vec2 origin;
 	float rotation;
 	Projection* projection;
+    Camera* camera;
     bool preserveModel;
 };

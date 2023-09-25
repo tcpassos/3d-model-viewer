@@ -137,6 +137,7 @@
   <ItemGroup>
     <ClCompile Include="include\light_stripe.hpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="main_bkp.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\rect.cpp" />
     <ClCompile Include="src\resource_manager.cpp" />
@@ -149,6 +150,7 @@
   <ItemGroup>
     <ClInclude Include="include\animated_sprite.hpp" />
     <ClInclude Include="include\animation.hpp" />
+    <ClInclude Include="include\camera.hpp" />
     <ClInclude Include="include\effects.h" />
     <ClInclude Include="include\effects\effect.h" />
     <ClInclude Include="include\effects\effect_grayscale.hpp" />

@@ -92,17 +92,6 @@ protected:
         model = glm::translate(model, glm::vec3(this->position - this->origin, 1.0));    // position
         model = glm::translate(model, glm::vec3(this->origin, 0.0));                     // set origin
         model = glm::rotate(model, rotation, glm::vec3(0.0f, 0.0f, 1.0f));               // rotation z
-
-        // Reverse projection rotation
-        if (this->preserveModel) {
-            float rotX = -this->projection->getRotation().x;
-            float rotY = -this->projection->getRotation().y;
-            float rotZ = -this->projection->getRotation().z;
-            model = glm::rotate(model, rotX, glm::vec3(1.0f, 0.0f, 0.0f));
-            model = glm::rotate(model, rotY, glm::vec3(0.0f, 1.0f, 0.0f));
-            model = glm::rotate(model, rotZ, glm::vec3(0.0f, 0.0f, 1.0f));
-        }
-
         model = glm::translate(model, glm::vec3(-this->origin.x, -this->origin.y, 0.0)); // reset origin
         model = glm::scale(model, glm::vec3(this->size, 1.0f));                          // resize
         return model;
@@ -112,13 +101,13 @@ private:
     void initRenderData() {
         GLfloat vertices[] = {
             //x     y    z    s	  t
-              0.0,  0.0, 0.0, 0.0, 0.0, // top left
-              0.0,  1.0, 0.0, 0.0, 1.0, // bottom left
-              1.0,  1.0, 0.0, 1.0, 1.0, // bottom right
+             -1.0, -1.0, -1.0, -1.0, -1.0, // top left
+             -1.0,  1.0, -1.0, -1.0,  1.0, // bottom left
+              1.0,  1.0, -1.0, -1.0,  1.0, // bottom right
 
-              1.0,  1.0, 0.0, 1.0, 1.0, // bottom right
-              1.0,  0.0, 0.0, 1.0, 0.0, // top right
-              0.0,  0.0, 0.0, 0.0, 0.0, // top left
+              1.0,  1.0, -1.0,  1.0,  1.0, // bottom right
+              1.0, -1.0, -1.0,  1.0, -1.0, // top right
+             -1.0, -1.0, -1.0, -1.0, -1.0, // top left
         };
 
         // VBO
