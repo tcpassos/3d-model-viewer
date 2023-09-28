@@ -159,6 +159,7 @@
     <ClInclude Include="include\framebuffer.hpp" />
     <ClInclude Include="include\game_info.h" />
     <ClInclude Include="include\inipp.h" />
+    <ClInclude Include="include\mesh.hpp" />
     <ClInclude Include="include\post_processing_pipeline.hpp" />
     <ClInclude Include="include\sound.h" />
     <ClInclude Include="include\frame.h" />
