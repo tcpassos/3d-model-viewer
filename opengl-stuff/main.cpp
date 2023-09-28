@@ -9,6 +9,7 @@
 #include <shader.h>
 #include <camera.hpp>
 #include <mesh.hpp>
+#include <object_3d.hpp>
 #include <resource_manager.h>
 #include <texture.h>
 
@@ -166,6 +167,9 @@ int main()
     // ------------------------------------------------------------------
     Texture2D cubeTexture = ResourceManager::loadTexture("assets/img/square.png", "cubeTexture");
 
+    // ------------------------------------------------------------------
+    Object3D cube(&cubeMesh, &cubeTexture);
+
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
     Shader cubeShader = ResourceManager::loadShader("assets/shaders/default.vs", "assets/shaders/default.fs", nullptr, "defaultShader");
@@ -191,10 +195,6 @@ int main()
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // bind textures on corresponding texture units
-        glActiveTexture(GL_TEXTURE0);
-        cubeTexture.bind();
-
         // activate shader
         cubeShader.use();
 
@@ -211,7 +211,7 @@ int main()
         cubeShader.setMatrix4("model", model);
 
         // render boxes
-        cubeMesh.draw();
+        cube.draw();
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
