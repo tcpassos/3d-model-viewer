@@ -47,10 +47,12 @@ public:
         glDeleteVertexArrays(1, &VAO);
     }
 
-    void draw() {
+    void bind() {
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+    }
+
+    GLsizei getVertexCount() {
+        return this->vertexCount;
     }
 
 private:

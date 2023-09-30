@@ -20,20 +20,12 @@ public:
 
     void render(Object3D& object) {
         shader.use();
-
-        // Pass projection matrix to shader (note that in this case it could change every frame)
+        
         glm::mat4 projection = glm::perspective(glm::radians(camera->cameraZoom), (float)screenDimensions.x / (float)screenDimensions.y, 0.1f, 100.0f);
         shader.setMatrix4("projection", projection);
+        shader.setMatrix4("view", camera->getViewMatrix());
+        shader.setMatrix4("model", object.getModelMatrix());
 
-        // Camera/view transformation
-        glm::mat4 view = camera->getViewMatrix();
-        shader.setMatrix4("view", view);
-
-        // Calculate the model matrix for each object and pass it to shader before drawing
-        glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-        shader.setMatrix4("model", model);
-
-        // Render object
         object.draw();
     }
 

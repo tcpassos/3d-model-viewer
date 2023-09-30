@@ -80,6 +80,8 @@ int main() {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        cube.rotate(deltaTime, deltaTime, deltaTime);
+        cube.setScale(glm::sin(currentFrame));
         renderer.render(cube);
 
         // --------------------------------------------------------------
