@@ -8,10 +8,7 @@
 
 class Object3D {
 public:
-    Object3D(Mesh* mesh, Texture2D* texture) {
-        this->mesh = mesh;
-        this->texture = texture;
-    }
+    Object3D(Mesh &objMesh, Texture2D &objTexture): mesh(&objMesh), texture(&objTexture) { }
 
     void draw();
 

@@ -161,7 +161,9 @@
     <ClInclude Include="include\inipp.h" />
     <ClInclude Include="include\mesh.hpp" />
     <ClInclude Include="include\object_3d.hpp" />
+    <ClInclude Include="include\obj\cube.hpp" />
     <ClInclude Include="include\post_processing_pipeline.hpp" />
+    <ClInclude Include="include\renderer.hpp" />
     <ClInclude Include="include\sound.h" />
     <ClInclude Include="include\frame.h" />
     <ClInclude Include="include\menu.hpp" />

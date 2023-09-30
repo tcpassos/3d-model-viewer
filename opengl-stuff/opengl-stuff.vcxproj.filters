@@ -19,6 +19,9 @@
     <Filter Include="Arquivos de Cabeçalho\effects">
       <UniqueIdentifier>{a1dd15ce-8802-4720-81ff-0d3a172cb639}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Arquivos de Origem\objects">
+      <UniqueIdentifier>{5def4a65-cb5e-45d8-902e-327156b29543}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main_bkp.cpp">
@@ -142,6 +145,12 @@
     </ClInclude>
     <ClInclude Include="include\object_3d.hpp">
       <Filter>Arquivos de Cabeçalho</Filter>
+    </ClInclude>
+    <ClInclude Include="include\renderer.hpp">
+      <Filter>Arquivos de Cabeçalho</Filter>
+    </ClInclude>
+    <ClInclude Include="include\obj\cube.hpp">
+      <Filter>Arquivos de Origem\objects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

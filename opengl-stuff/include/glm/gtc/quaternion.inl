@@ -175,8 +175,8 @@ namespace glm
 		mat<3, 3, T, Q> Result;
 
 		Result[2] = -direction;
-		vec<3, T, Q> const& Right = cross(up, Result[2]);
-		Result[0] = Right * inversesqrt(max(static_cast<T>(0.00001), dot(Right, Right)));
+		vec<3, T, Q> const& right = cross(up, Result[2]);
+		Result[0] = right * inversesqrt(max(static_cast<T>(0.00001), dot(right, right)));
 		Result[1] = cross(Result[2], Result[0]);
 
 		return quat_cast(Result);
@@ -188,8 +188,8 @@ namespace glm
 		mat<3, 3, T, Q> Result;
 
 		Result[2] = direction;
-		vec<3, T, Q> const& Right = cross(up, Result[2]);
-		Result[0] = Right * inversesqrt(max(static_cast<T>(0.00001), dot(Right, Right)));
+		vec<3, T, Q> const& right = cross(up, Result[2]);
+		Result[0] = right * inversesqrt(max(static_cast<T>(0.00001), dot(right, right)));
 		Result[1] = cross(Result[2], Result[0]);
 
 		return quat_cast(Result);
