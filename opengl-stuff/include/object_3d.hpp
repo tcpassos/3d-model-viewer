@@ -13,6 +13,15 @@ public:
         this->scale = glm::vec3(1.0f);
         this->origin = glm::vec3(0.0f);
         this->rotation = glm::vec3(0.0f);
+        this->color = glm::vec4(1.0f);
+    }
+
+    Object3D(Mesh& objMesh, glm::vec4 objColor) : mesh(&objMesh), color(objColor) {
+        this->position = glm::vec3(0.0f);
+        this->scale = glm::vec3(1.0f);
+        this->origin = glm::vec3(0.0f);
+        this->rotation = glm::vec3(0.0f);
+        this->texture = nullptr;
     }
 
     glm::mat4 getModelMatrix() {
@@ -93,9 +102,19 @@ public:
         this->rotation.z += rotation;
     }
 
+    Texture2D* getTexture() {
+        return this->texture;
+    }
+
+    glm::vec4 getColor() {
+        return this->color;
+    }
+
     void draw() {
-        glActiveTexture(GL_TEXTURE0);
-        texture->bind();
+        if (texture != nullptr) {
+            glActiveTexture(GL_TEXTURE0);
+            texture->bind();
+        }
         mesh->bind();
         glDrawElements(GL_TRIANGLES, mesh->getVertexCount(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
@@ -104,6 +123,7 @@ public:
 private:
     Mesh* mesh;
     Texture2D* texture;
+    glm::vec4 color;
 
     glm::vec3 position;
     glm::vec3 scale;
