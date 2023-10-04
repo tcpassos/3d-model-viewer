@@ -15,6 +15,7 @@
 #include <texture.h>
 
 #include "obj/cube.hpp"
+#include "obj/Object.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -64,7 +65,7 @@ int main() {
 
     // --------------------------------------------------------------
     Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
-    Cube cube;
+    Object object;
 
     // --------------------------------------------------------------
     // Render loop
@@ -80,9 +81,9 @@ int main() {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        cube.rotate(deltaTime, deltaTime, deltaTime);
-        cube.setScale(glm::sin(currentFrame));
-        renderer.render(cube);
+        //cube.rotate(deltaTime, deltaTime, deltaTime);
+        //cube.setScale(glm::sin(currentFrame));
+        renderer.render(object);
 
         // --------------------------------------------------------------
         glfwSwapBuffers(window);

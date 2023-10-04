@@ -57,6 +57,9 @@
     <ClCompile Include="main.cpp">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
+    <ClCompile Include="src\OBJReader.cpp">
+      <Filter>Arquivos de Origem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\menu.hpp">
@@ -151,6 +154,12 @@
     </ClInclude>
     <ClInclude Include="include\obj\cube.hpp">
       <Filter>Arquivos de Origem\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\obj\Object.hpp">
+      <Filter>Arquivos de Origem\objects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\obj\OBJReader.hpp">
+      <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

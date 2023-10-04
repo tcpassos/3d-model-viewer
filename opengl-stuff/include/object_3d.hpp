@@ -16,7 +16,7 @@ public:
         this->color = glm::vec4(1.0f);
     }
 
-    Object3D(Mesh& objMesh, glm::vec4 objColor) : mesh(&objMesh), color(objColor) {
+    Object3D(Mesh& objMesh, glm::vec4 objColor = glm::vec4(0.7f)) : mesh(&objMesh), color(objColor) {
         this->position = glm::vec3(0.0f);
         this->scale = glm::vec3(1.0f);
         this->origin = glm::vec3(0.0f);
