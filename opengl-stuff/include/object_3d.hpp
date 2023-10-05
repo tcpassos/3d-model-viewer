@@ -8,20 +8,15 @@
 
 class Object3D {
 public:
-    Object3D(Mesh &objMesh, Texture2D &objTexture): mesh(&objMesh), texture(&objTexture) {
+    Object3D(Mesh &objMesh): mesh(objMesh){
         this->position = glm::vec3(0.0f);
         this->scale = glm::vec3(1.0f);
         this->origin = glm::vec3(0.0f);
         this->rotation = glm::vec3(0.0f);
-        this->color = glm::vec4(1.0f);
     }
 
-    Object3D(Mesh& objMesh, glm::vec4 objColor = glm::vec4(0.7f)) : mesh(&objMesh), color(objColor) {
-        this->position = glm::vec3(0.0f);
-        this->scale = glm::vec3(1.0f);
-        this->origin = glm::vec3(0.0f);
-        this->rotation = glm::vec3(0.0f);
-        this->texture = nullptr;
+    ~Object3D() {
+        this->mesh.deleteBuffers();
     }
 
     glm::mat4 getModelMatrix() {
@@ -102,28 +97,22 @@ public:
         this->rotation.z += rotation;
     }
 
-    Texture2D* getTexture() {
-        return this->texture;
-    }
-
-    glm::vec4 getColor() {
-        return this->color;
+    bool hasTexture() {
+        return mesh.getTexture() != nullptr;
     }
 
     void draw() {
-        if (texture != nullptr) {
+        if (hasTexture()) {
             glActiveTexture(GL_TEXTURE0);
-            texture->bind();
+            mesh.getTexture()->bind();
         }
-        mesh->bind();
-        glDrawElements(GL_TRIANGLES, mesh->getVertexCount(), GL_UNSIGNED_INT, 0);
+        mesh.bind();
+        glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
     }
 
 private:
-    Mesh* mesh;
-    Texture2D* texture;
-    glm::vec4 color;
+    Mesh mesh;
 
     glm::vec3 position;
     glm::vec3 scale;

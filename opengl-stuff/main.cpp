@@ -10,12 +10,10 @@
 #include <shader.h>
 #include <camera.hpp>
 #include <mesh.hpp>
+#include <object_reader.hpp>
 #include <renderer.hpp>
 #include <resource_manager.h>
 #include <texture.h>
-
-#include "obj/cube.hpp"
-#include "obj/Object.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -65,7 +63,9 @@ int main() {
 
     // --------------------------------------------------------------
     Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
-    Object object;
+    
+    ObjectReader objReader;
+    Object3D object = objReader.readModel("assets/obj/cube.obj");
 
     // --------------------------------------------------------------
     // Render loop

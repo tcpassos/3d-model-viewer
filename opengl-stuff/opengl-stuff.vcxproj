@@ -111,7 +111,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freetype\freetype.lib;GLFW\glfw3.lib;opengl32.lib;irrklang\irrKlang.lib;user32.lib;gdi32.lib;shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype\freetype.lib;GLFW\glfw3.lib;opengl32.lib;irrklang\irrKlang.lib;user32.lib;gdi32.lib;shell32.lib;assimp\assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -139,7 +139,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="main_bkp.cpp" />
     <ClCompile Include="src\glad.c" />
-    <ClCompile Include="src\OBJReader.cpp" />
     <ClCompile Include="src\rect.cpp" />
     <ClCompile Include="src\resource_manager.cpp" />
     <ClCompile Include="src\shader.cpp" />
@@ -162,9 +161,6 @@
     <ClInclude Include="include\inipp.h" />
     <ClInclude Include="include\mesh.hpp" />
     <ClInclude Include="include\object_3d.hpp" />
-    <ClInclude Include="include\obj\cube.hpp" />
-    <ClInclude Include="include\obj\Object.hpp" />
-    <ClInclude Include="include\obj\OBJReader.hpp" />
     <ClInclude Include="include\post_processing_pipeline.hpp" />
     <ClInclude Include="include\renderer.hpp" />
     <ClInclude Include="include\sound.h" />

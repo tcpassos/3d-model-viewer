@@ -3,11 +3,16 @@
 #include <vector>
 #include <glad/glad.h>
 
+#include "texture.h"
+
 class Mesh {
 public:
     Mesh(const std::vector<glm::vec3>& vertices,
         const std::vector<glm::vec2>& texCoords,
-        const std::vector<GLuint>& indices) : Mesh(vertices, indices) {
+        const std::vector<GLuint>& indices,
+        Texture2D* texture) : Mesh(vertices, indices) {
+
+        this->texture = texture;
         
         glGenBuffers(1, &TBO);
         glBindVertexArray(VAO);
@@ -27,6 +32,7 @@ public:
         const std::vector<GLuint>& indices) {
 
         vertexCount = static_cast<GLsizei>(indices.size());
+        texture = nullptr;
 
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
@@ -52,13 +58,6 @@ public:
         glBindVertexArray(0);
     }
 
-    ~Mesh() {
-        glDeleteBuffers(1, &VBO);
-        glDeleteBuffers(1, &TBO);
-        glDeleteBuffers(1, &EBO);
-        glDeleteVertexArrays(1, &VAO);
-    }
-
     void bind() {
         glBindVertexArray(VAO);
     }
@@ -67,7 +66,19 @@ public:
         return this->vertexCount;
     }
 
+    Texture2D* getTexture() {
+        return this->texture;
+    }
+
+    void deleteBuffers() {
+        glDeleteBuffers(1, &VBO);
+        glDeleteBuffers(1, &TBO);
+        glDeleteBuffers(1, &EBO);
+        glDeleteVertexArrays(1, &VAO);
+    }
+
 private:
     GLuint VAO, VBO, TBO, EBO;
     GLsizei vertexCount;
+    Texture2D* texture;
 };
