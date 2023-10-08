@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 
 #include "object_3d.hpp"
+#include "resource_manager.h"
 
 class ObjectReader {
 public:
@@ -31,7 +32,8 @@ public:
 
         processNode(scene->mRootNode, scene, vertices, textureCoords, indices);
 
-        Mesh mesh(vertices, indices);
+        Texture2D texture = ResourceManager::loadTexture("assets/obj/cube/cube.png", "cubeTexture");
+        Mesh mesh(vertices, textureCoords, indices, texture);
         return Object3D(mesh);
     }
 

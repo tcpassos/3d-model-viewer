@@ -98,13 +98,13 @@ public:
     }
 
     bool hasTexture() {
-        return mesh.getTexture() != nullptr;
+        return mesh.hasTexture();
     }
 
     void draw() {
         if (hasTexture()) {
             glActiveTexture(GL_TEXTURE0);
-            mesh.getTexture()->bind();
+            mesh.getTexture().bind();
         }
         mesh.bind();
         glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);

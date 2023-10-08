@@ -10,9 +10,10 @@ public:
     Mesh(const std::vector<glm::vec3>& vertices,
         const std::vector<glm::vec2>& texCoords,
         const std::vector<GLuint>& indices,
-        Texture2D* texture) : Mesh(vertices, indices) {
+        Texture2D texture) : Mesh(vertices, indices) {
 
         this->texture = texture;
+        this->textureLoaded = true;
         
         glGenBuffers(1, &TBO);
         glBindVertexArray(VAO);
@@ -32,7 +33,6 @@ public:
         const std::vector<GLuint>& indices) {
 
         vertexCount = static_cast<GLsizei>(indices.size());
-        texture = nullptr;
 
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
@@ -66,7 +66,11 @@ public:
         return this->vertexCount;
     }
 
-    Texture2D* getTexture() {
+    bool hasTexture() {
+        return this->textureLoaded;
+    }
+
+    Texture2D getTexture() {
         return this->texture;
     }
 
@@ -80,5 +84,6 @@ public:
 private:
     GLuint VAO, VBO, TBO, EBO;
     GLsizei vertexCount;
-    Texture2D* texture;
+    Texture2D texture;
+    bool textureLoaded;
 };
