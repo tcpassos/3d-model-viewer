@@ -63,94 +63,8 @@ int main() {
 
     // --------------------------------------------------------------
     Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
-    
-
-    std::vector<glm::vec3> cubeVertices = {
-        // Front face
-        glm::vec3(-0.5f, -0.5f, 0.5f),
-        glm::vec3(0.5f, -0.5f, 0.5f),
-        glm::vec3(0.5f, 0.5f, 0.5f),
-        glm::vec3(-0.5f, 0.5f, 0.5f),
-
-        // Back face
-        glm::vec3(0.5f, -0.5f, -0.5f),
-        glm::vec3(-0.5f, -0.5f, -0.5f),
-        glm::vec3(-0.5f, 0.5f, -0.5f),
-        glm::vec3(0.5f, 0.5f, -0.5f),
-
-        // Upper face
-        glm::vec3(-0.5f, 0.5f, 0.5f),
-        glm::vec3(0.5f, 0.5f, 0.5f),
-        glm::vec3(0.5f, 0.5f, -0.5f),
-        glm::vec3(-0.5f, 0.5f, -0.5f),
-
-        // Bottom face
-        glm::vec3(-0.5f, -0.5f, -0.5f),
-        glm::vec3(0.5f, -0.5f, -0.5f),
-        glm::vec3(0.5f, -0.5f, 0.5f),
-        glm::vec3(-0.5f, -0.5f, 0.5f),
-
-        // Right face
-        glm::vec3(0.5f, -0.5f, 0.5f),
-        glm::vec3(0.5f, -0.5f, -0.5f),
-        glm::vec3(0.5f, 0.5f, -0.5f),
-        glm::vec3(0.5f, 0.5f, 0.5f),
-
-        // Left face
-        glm::vec3(-0.5f, -0.5f, -0.5f),
-        glm::vec3(-0.5f, -0.5f, 0.5f),
-        glm::vec3(-0.5f, 0.5f, 0.5f),
-        glm::vec3(-0.5f, 0.5f, -0.5f),
-    };
-
-    std::vector<glm::vec2> cubeTexCoords = {
-        // Front face
-        glm::vec2(0.0f, 0.0f),
-        glm::vec2(1.0f, 0.0f),
-        glm::vec2(1.0f, 1.0f),
-        glm::vec2(0.0f, 1.0f),
-
-        // Back face
-        glm::vec2(1.0f, 0.0f),
-        glm::vec2(0.0f, 0.0f),
-        glm::vec2(0.0f, 1.0f),
-        glm::vec2(1.0f, 1.0f),
-
-        // Upper face
-        glm::vec2(0.0f, 1.0f),
-        glm::vec2(1.0f, 1.0f),
-        glm::vec2(1.0f, 0.0f),
-        glm::vec2(0.0f, 0.0f),
-
-        // Bottom face
-        glm::vec2(0.0f, 0.0f),
-        glm::vec2(1.0f, 0.0f),
-        glm::vec2(1.0f, 1.0f),
-        glm::vec2(0.0f, 1.0f),
-
-        // Right face
-        glm::vec2(1.0f, 0.0f),
-        glm::vec2(0.0f, 0.0f),
-        glm::vec2(0.0f, 1.0f),
-        glm::vec2(1.0f, 1.0f),
-
-        // Left
-        glm::vec2(0.0f, 0.0f),
-        glm::vec2(1.0f, 0.0f),
-        glm::vec2(1.0f, 1.0f),
-        glm::vec2(0.0f, 1.0f),
-    };
-    std::vector<unsigned int> cubeIndices = {
-    0, 1, 2, 2, 3, 0,        // Front face
-    4, 5, 6, 6, 7, 4,        // Back face
-    8, 9, 10, 10, 11, 8,     // Upper face
-    12, 13, 14, 14, 15, 12,  // Bottom face
-    16, 17, 18, 18, 19, 16,  // Right face
-    20, 21, 22, 22, 23, 20   // Left face
-    };
-
     ObjectReader objReader;
-    Object3D object = objReader.readModel("assets/obj/cube/cube.obj");
+    std::vector<Object3D*> objects = objReader.readModel("assets/obj/skull/12140_Skull_v3_L2.obj");
 
     // --------------------------------------------------------------
     // Render loop
@@ -166,9 +80,9 @@ int main() {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //cube.rotate(deltaTime, deltaTime, deltaTime);
-        //cube.setScale(glm::sin(currentFrame));
-        renderer.render(object);
+        for (Object3D* object : objects) {
+            renderer.render(*object);
+        }
 
         // --------------------------------------------------------------
         glfwSwapBuffers(window);

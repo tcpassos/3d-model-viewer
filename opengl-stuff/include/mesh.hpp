@@ -33,6 +33,7 @@ public:
         const std::vector<GLuint>& indices) {
 
         vertexCount = static_cast<GLsizei>(indices.size());
+        this->textureLoaded = false;
 
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);

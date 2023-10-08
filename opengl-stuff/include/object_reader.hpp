@@ -3,11 +3,14 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <filesystem>
 #include <vector>
 #include <glm/glm.hpp>
 
 #include "object_3d.hpp"
 #include "resource_manager.h"
+
+namespace fs = std::filesystem;
 
 class ObjectReader {
 public:
@@ -19,41 +22,49 @@ public:
         delete importer;
     }
 
-    Object3D readModel(const char* filePath) {
+    std::vector<Object3D*> readModel(const char* filePath) {
         const aiScene* scene = importer->ReadFile(filePath, aiProcess_Triangulate | aiProcess_FlipUVs);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
             std::cerr << "Assimp error: " << importer->GetErrorString() << std::endl;
         }
 
+        std::vector<Mesh> meshes;
+        std::vector<Object3D*> objects;
         std::vector<glm::vec3> vertices;
         std::vector<glm::vec2> textureCoords;
         std::vector<GLuint> indices;
 
-        processNode(scene->mRootNode, scene, vertices, textureCoords, indices);
+        processNode(scene->mRootNode, scene, meshes, filePath);
 
-        Texture2D texture = ResourceManager::loadTexture("assets/obj/cube/cube.png", "cubeTexture");
-        Mesh mesh(vertices, textureCoords, indices, texture);
-        return Object3D(mesh);
+        for (Mesh& mesh : meshes) {
+            Object3D* object = new Object3D(mesh);
+            objects.push_back(object);
+        }
+
+        return objects;
     }
 
 private:
     Assimp::Importer* importer;
 
-    void processNode(const aiNode* node, const aiScene* scene, std::vector<glm::vec3> &vertices, std::vector<glm::vec2> &textureCoords, std::vector<GLuint> &indices) {
+    void processNode(const aiNode* node, const aiScene* scene, std::vector<Mesh>& meshes, const std::string& objPath) {
         // Process all the meshes in this node
         for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
             const aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            processMesh(mesh, scene, vertices, textureCoords, indices);
-            //processTexture(scene->mMaterials[i]);
+            meshes.push_back(createMesh(mesh, scene, objPath));
         }
         // Recursively process child nodes
         for (unsigned int i = 0; i < node->mNumChildren; ++i) {
-            processNode(node->mChildren[i], scene, vertices, textureCoords, indices);
+            processNode(node->mChildren[i], scene, meshes, objPath);
         }
     }
 
-    void processMesh(const aiMesh* mesh, const aiScene* scene, std::vector<glm::vec3> &vertices, std::vector<glm::vec2> &textureCoords, std::vector<GLuint> &indices) {
+    Mesh createMesh(const aiMesh* mesh, const aiScene* scene, const std::string& objPath) {
+        std::vector<glm::vec3> vertices;
+        std::vector<glm::vec2> textureCoords;
+        std::vector<GLuint> indices;
+
         for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
             glm::vec3 auxVertex;
             auxVertex.x = mesh->mVertices[i].x;
@@ -61,7 +72,7 @@ private:
             auxVertex.z = mesh->mVertices[i].z;
             vertices.push_back(auxVertex);
 
-            if (mesh->mTextureCoords[0]) {
+            if (mesh->HasTextureCoords(0)) {
                 glm::vec2 texCoord;
                 texCoord.x = mesh->mTextureCoords[0][i].x;
                 texCoord.y = mesh->mTextureCoords[0][i].y;
@@ -75,10 +86,21 @@ private:
                 indices.push_back(face.mIndices[j]);
             }
         }
+
+        // Try to get mesh texture
+        if (mesh->mMaterialIndex >= 0 && mesh->mMaterialIndex < scene->mNumMaterials) {
+            std::string texturePath = getTextureForMaterial(scene->mMaterials[mesh->mMaterialIndex], objPath);
+            if (!texturePath.empty()) {
+                std::string meshTexturePath = relativizePath(objPath, texturePath).c_str();
+                Texture2D meshTexture = ResourceManager::loadTexture(meshTexturePath.c_str(), texturePath);
+                return Mesh(vertices, textureCoords, indices, meshTexture);
+            }
+        }
+
+        return Mesh(vertices, indices);
     }
 
-    /*void processTexture(const aiMaterial* material) {
-        // Check if material has texture
+    std::string getTextureForMaterial(const aiMaterial* material, const std::string& objPath) {
         for (unsigned int i = 0; i < AI_TEXTURE_TYPE_MAX; ++i) {
             aiTextureType textureType = static_cast<aiTextureType>(i);
             unsigned int textureCount = material->GetTextureCount(textureType);
@@ -87,10 +109,21 @@ private:
                 aiString texturePath;
                 if (material->GetTexture(textureType, j, &texturePath) == AI_SUCCESS) {
                     std::string texturePathStr = texturePath.C_Str();
-                    std::replace(texturePathStr.begin(), texturePathStr.end(), '\\', '/');
-                    texturePaths.push_back(texturePathStr);
+                    return texturePathStr;
                 }
             }
         }
-    }*/
+        return "";
+    }
+
+    std::string relativizePath(const std::string& basePath, const std::string& relativePath) {
+        fs::path base(basePath);
+        fs::path relative(relativePath);
+        if (fs::is_regular_file(base)) {
+            return (base.parent_path() / relative).string();
+        } else {
+            return (base / relative).string();
+        }
+    }
+
 };
