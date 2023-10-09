@@ -173,18 +173,20 @@ void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
+    float speed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? 5.0f : 1.0f;
+
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.moveForward(deltaTime);
+        camera.moveForward(deltaTime * speed);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.moveBackward(deltaTime);
+        camera.moveBackward(deltaTime * speed);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.moveLeft(deltaTime);
+        camera.moveLeft(deltaTime * speed);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.moveRight(deltaTime);
+        camera.moveRight(deltaTime * speed);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        camera.moveUp(deltaTime);
+        camera.moveUp(deltaTime * speed);
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-        camera.moveDown(deltaTime);
+        camera.moveDown(deltaTime * speed);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
