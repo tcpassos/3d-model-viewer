@@ -63,6 +63,7 @@ private:
     Mesh createMesh(const aiMesh* mesh, const aiScene* scene, const std::string& objPath) {
         std::vector<glm::vec3> vertices;
         std::vector<glm::vec2> textureCoords;
+        std::vector<glm::vec3> normals;
         std::vector<GLuint> indices;
 
         for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
@@ -77,6 +78,14 @@ private:
                 texCoord.x = mesh->mTextureCoords[0][i].x;
                 texCoord.y = mesh->mTextureCoords[0][i].y;
                 textureCoords.push_back(texCoord);
+            }
+
+            if (mesh->HasNormals()) {
+                glm::vec3 normal;
+                normal.x = mesh->mNormals[i].x;
+                normal.y = mesh->mNormals[i].y;
+                normal.z = mesh->mNormals[i].z;
+                normals.push_back(normal);
             }
         }
 
@@ -93,11 +102,11 @@ private:
             if (!texturePath.empty()) {
                 std::string meshTexturePath = relativizePath(objPath, texturePath).c_str();
                 Texture2D meshTexture = ResourceManager::loadTexture(meshTexturePath.c_str(), texturePath);
-                return Mesh(vertices, textureCoords, indices, meshTexture);
+                return Mesh(vertices, textureCoords, normals, indices, meshTexture);
             }
         }
 
-        return Mesh(vertices, indices);
+        return Mesh(vertices, normals, indices);
     }
 
     std::string getTextureForMaterial(const aiMaterial* material, const std::string& objPath) {

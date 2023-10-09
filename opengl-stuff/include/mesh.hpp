@@ -9,8 +9,9 @@ class Mesh {
 public:
     Mesh(const std::vector<glm::vec3>& vertices,
         const std::vector<glm::vec2>& texCoords,
+        const std::vector<glm::vec3>& normals,
         const std::vector<GLuint>& indices,
-        Texture2D texture) : Mesh(vertices, indices) {
+        Texture2D texture) : Mesh(vertices, normals, indices) {
 
         this->texture = texture;
         this->textureLoaded = true;
@@ -30,6 +31,7 @@ public:
     }
 
     Mesh(const std::vector<glm::vec3>& vertices,
+        const std::vector<glm::vec3>& normals,
         const std::vector<GLuint>& indices) {
 
         vertexCount = static_cast<GLsizei>(indices.size());
@@ -37,7 +39,7 @@ public:
 
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
-        glGenBuffers(1, &TBO);
+        glGenBuffers(1, &NBO);
         glGenBuffers(1, &EBO);
 
         glBindVertexArray(VAO);
@@ -48,11 +50,17 @@ public:
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
         glEnableVertexAttribArray(0);
 
+        // Normals
+        glBindBuffer(GL_ARRAY_BUFFER, NBO);
+        glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(2);
+
         // Indexes
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
-        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
+        glEnableVertexAttribArray(3);
 
         // Unbind
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -77,13 +85,14 @@ public:
 
     void deleteBuffers() {
         glDeleteBuffers(1, &VBO);
+        glDeleteBuffers(1, &NBO);
         glDeleteBuffers(1, &TBO);
         glDeleteBuffers(1, &EBO);
         glDeleteVertexArrays(1, &VAO);
     }
 
 private:
-    GLuint VAO, VBO, TBO, EBO;
+    GLuint VAO, VBO, NBO, TBO, EBO;
     GLsizei vertexCount;
     Texture2D texture;
     bool textureLoaded;

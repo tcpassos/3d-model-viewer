@@ -12,6 +12,7 @@ public:
     Renderer(glm::vec2 dimensions, Camera& camera) {
         this->screenDimensions = dimensions;
         this->camera = &camera;
+        this->lightPosition = glm::vec3(1.2f, 1.0f, 2.0f);
         this->textureShader = ResourceManager::loadShader("assets/shaders/default_texture.vs", "assets/shaders/default_texture.fs", nullptr, "defaultTextureShader");
         this->colorShader = ResourceManager::loadShader("assets/shaders/default_color.vs", "assets/shaders/default_color.fs", nullptr, "defaultColorShader");
         this->shader = nullptr;
@@ -33,6 +34,8 @@ public:
         shader->setMatrix4("projection", projection);
         shader->setMatrix4("view", camera->getViewMatrix());
         shader->setMatrix4("model", object.getModelMatrix());
+        shader->setVector3f("lightPos", lightPosition);
+        shader->setVector3f("viewPos", camera->position);
 
         object.draw();
     }
@@ -42,5 +45,6 @@ private:
     Shader colorShader;
     Shader* shader;
     Camera* camera;
+    glm::vec3 lightPosition;
     glm::vec2 screenDimensions;
 };
