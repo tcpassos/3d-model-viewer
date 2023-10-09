@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;include\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -137,6 +137,13 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\glad.c" />
+    <ClCompile Include="src\imgui\imgui.cpp" />
+    <ClCompile Include="src\imgui\imgui_demo.cpp" />
+    <ClCompile Include="src\imgui\imgui_draw.cpp" />
+    <ClCompile Include="src\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="src\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="src\imgui\imgui_tables.cpp" />
+    <ClCompile Include="src\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\resource_manager.cpp" />
     <ClCompile Include="src\shader.cpp" />
     <ClCompile Include="src\sound.cpp" />
@@ -152,9 +159,19 @@
     <ClInclude Include="include\effects\effect_shine.hpp" />
     <ClInclude Include="include\font.h" />
     <ClInclude Include="include\framebuffer.hpp" />
+    <ClInclude Include="include\imgui\imconfig.h" />
+    <ClInclude Include="include\imgui\imgui.h" />
+    <ClInclude Include="include\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="include\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="include\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="include\imgui\imgui_internal.h" />
+    <ClInclude Include="include\imgui\imstb_rectpack.h" />
+    <ClInclude Include="include\imgui\imstb_textedit.h" />
+    <ClInclude Include="include\imgui\imstb_truetype.h" />
     <ClInclude Include="include\inipp.h" />
     <ClInclude Include="include\mesh.hpp" />
     <ClInclude Include="include\object_3d.hpp" />
+    <ClInclude Include="include\object_reader.hpp" />
     <ClInclude Include="include\post_processing_pipeline.hpp" />
     <ClInclude Include="include\renderer.hpp" />
     <ClInclude Include="include\sound.h" />

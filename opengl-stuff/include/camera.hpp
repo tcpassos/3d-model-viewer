@@ -73,6 +73,16 @@ public:
         position += right * velocity;
     }
 
+    void moveUp(float deltaTime) {
+        float velocity = movementSpeed * deltaTime;
+        position += up * velocity;
+    }
+
+    void moveDown(float deltaTime) {
+        float velocity = movementSpeed * deltaTime;
+        position -= up * velocity;
+    }
+
     // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
     void processMouseMovement(float xoffset, float yoffset) {
         yaw += xoffset * mouseSensitivity;

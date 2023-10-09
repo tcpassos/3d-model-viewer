@@ -8,6 +8,11 @@
 
 class Object3D {
 public:
+    glm::vec3 position;
+    glm::vec3 scale;
+    glm::vec3 origin;
+    glm::vec3 rotation;
+
     Object3D(Mesh &objMesh): mesh(objMesh){
         this->position = glm::vec3(0.0f);
         this->scale = glm::vec3(1.0f);
@@ -113,9 +118,4 @@ public:
 
 private:
     Mesh mesh;
-
-    glm::vec3 position;
-    glm::vec3 scale;
-    glm::vec3 origin;
-    glm::vec3 rotation;
 };

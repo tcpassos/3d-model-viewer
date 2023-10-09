@@ -2,6 +2,10 @@
 #include <GLFW/glfw3.h>
 #include <stb/stb_image.h>
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -52,7 +56,7 @@ int main() {
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
     // Tell GLFW to capture our mouse
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     // GLAD: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
@@ -62,9 +66,17 @@ int main() {
     glEnable(GL_DEPTH_TEST);
 
     // --------------------------------------------------------------
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
+
+    // --------------------------------------------------------------
     Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
     ObjectReader objReader;
-    std::vector<Object3D*> objects = objReader.readModel("assets/obj/skull/12140_Skull_v3_L2.obj");
+    std::vector<Object3D*> objects = objReader.readModel("assets/obj/batman/batman.obj");
 
     // --------------------------------------------------------------
     // Render loop
@@ -80,15 +92,47 @@ int main() {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
         for (Object3D* object : objects) {
             renderer.render(*object);
         }
+
+        ImGui::Begin("Transformar");
+        
+        ImGui::Text("Rotacao em X: %.1f graus", glm::degrees(objects[0]->rotation.x));
+        ImGui::SliderFloat("##slider_rotation_x", &objects[0]->rotation.x, 0.0f, 6.28f);
+        
+        ImGui::Text("Rotacao em Y: %.1f graus", glm::degrees(objects[0]->rotation.y));
+        ImGui::SliderFloat("##slider_rotation_y", &objects[0]->rotation.y, 0.0f, 6.28f);
+
+        ImGui::Text("Rotacao em Z: %.1f graus", glm::degrees(objects[0]->rotation.z));
+        ImGui::SliderFloat("##slider_rotation_z", &objects[0]->rotation.z, 0.0f, 6.28f);
+
+        ImGui::Text("Escala em X", objects[0]->scale.x);
+        ImGui::InputFloat("##input_scale_x", &objects[0]->scale.x, 0.01, 10.0);
+
+        ImGui::Text("Escala em Y", objects[0]->scale.y);
+        ImGui::InputFloat("##input_scale_y", &objects[0]->scale.y, 0.01, 10.0);
+
+        ImGui::Text("Escala em Z", objects[0]->scale.z);
+        ImGui::InputFloat("##input_scale_z", &objects[0]->scale.z, 0.01, 10.0);
+
+        ImGui::End();
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         // --------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
     // ------------------------------------------------------------------
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
     // GLFW: terminate, clearing all previously allocated GLFW resources.
     glfwTerminate();
     return 0;
@@ -96,8 +140,7 @@ int main() {
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow* window)
-{
+void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
@@ -109,27 +152,26 @@ void processInput(GLFWwindow* window)
         camera.moveLeft(deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.moveRight(deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        camera.moveUp(deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+        camera.moveDown(deltaTime);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
-{
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
 
-    if (firstMouse)
-    {
+    if (firstMouse) {
         lastX = xpos;
         lastY = ypos;
         firstMouse = false;
@@ -141,12 +183,12 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     lastX = xpos;
     lastY = ypos;
 
-    camera.processMouseMovement(xoffset, yoffset);
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+        camera.processMouseMovement(xoffset, yoffset);
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     camera.zoom(static_cast<float>(yoffset));
 }
