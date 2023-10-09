@@ -15,7 +15,7 @@ public:
 
         this->texture = texture;
         this->textureLoaded = true;
-        
+
         glGenBuffers(1, &TBO);
         glBindVertexArray(VAO);
 
@@ -36,6 +36,7 @@ public:
 
         vertexCount = static_cast<GLsizei>(indices.size());
         this->textureLoaded = false;
+        this->vertices = vertices;
 
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
@@ -83,6 +84,10 @@ public:
         return this->texture;
     }
 
+    std::vector<glm::vec3>& getVertices() {
+        return this->vertices;
+    }
+
     void deleteBuffers() {
         glDeleteBuffers(1, &VBO);
         glDeleteBuffers(1, &NBO);
@@ -94,6 +99,7 @@ public:
 private:
     GLuint VAO, VBO, NBO, TBO, EBO;
     GLsizei vertexCount;
+    std::vector<glm::vec3> vertices;
     Texture2D texture;
     bool textureLoaded;
 };

@@ -38,6 +38,11 @@ bool firstMouse = true;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
+std::vector<Object3D*> objects;
+
+Object3D* selectedObject = nullptr;
+int selectedObjectIndex = -1;
+
 int main() {
     // GLFW: initialize and configure
     glfwInit();
@@ -76,12 +81,7 @@ int main() {
     // --------------------------------------------------------------
     Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
     ObjectReader objReader;
-    std::vector<Object3D*> objects = objReader.readModel("assets/obj/batman/batman.obj");
-
-    std::vector<bool> selectedObjectIndexes;
-    for (int i = 0; i < objects.size(); i++) selectedObjectIndexes.push_back(false);
-    
-    Object3D* selectedObject = nullptr;
+    objects = objReader.readModel("assets/obj/batman/batman.obj");
 
     // --------------------------------------------------------------
     // Render loop
@@ -101,8 +101,8 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        for (Object3D* object : objects) {
-            renderer.render(*object);
+        for (int x = 0; x < objects.size(); x++) {
+            renderer.render(*objects[x], x == selectedObjectIndex);
         }
 
         // Mesh selection window
@@ -110,11 +110,9 @@ int main() {
         ImGui::BeginListBox("##meshes-list");
             for (int i = 0; i < objects.size(); i++) {
                 std::string meshName = "mesh_" + std::to_string(i);
-                if (ImGui::Selectable(meshName.c_str(), selectedObjectIndexes[i])) {
-                    for (int j = 0; j < selectedObjectIndexes.size(); j++) {
-                        selectedObjectIndexes[j] = i == j ? true : false;
-                    }
+                if (ImGui::Selectable(meshName.c_str(), i == selectedObjectIndex)) {
                     selectedObject = objects[i];
+                    selectedObjectIndex = i;
                 }
             }
         ImGui::EndListBox();
@@ -123,30 +121,25 @@ int main() {
         if (selectedObject) {
             // Transformations window
             ImGui::Begin("Transform", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
-            // Unselect mesh if lost focus
-            if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsWindowFocused()) {
-                for (int i = 0; i < selectedObjectIndexes.size(); i++)
-                    selectedObjectIndexes[i] = false;
-                selectedObject = nullptr;
-            } else {
-                // Position
-                ImGui::Text("Position");
-                ImGui::DragScalar("X##position_x", ImGuiDataType_Float, &selectedObject->position.x, 0.05f);
-                ImGui::DragScalar("Y##position_y", ImGuiDataType_Float, &selectedObject->position.y, 0.05f);
-                ImGui::DragScalar("Z##position_z", ImGuiDataType_Float, &selectedObject->position.z, 0.05f);
-                ImGui::Separator();
-                // Rotation
-                ImGui::Text("Rotation");
-                ImGui::SliderAngle("X##rotation_x", &selectedObject->rotation.x, 0.0f, 360.0f);
-                ImGui::SliderAngle("Y##rotation_y", &selectedObject->rotation.y, 0.0f, 360.0f);
-                ImGui::SliderAngle("Z##rotation_z", &selectedObject->rotation.z, 0.0f, 360.0f);
-                ImGui::Separator();
-                // Scale
-                ImGui::Text("Scale");
-                ImGui::DragScalar("X##scale_x", ImGuiDataType_Float, &selectedObject->scale.x, 0.05f);
-                ImGui::DragScalar("Y##scale_y", ImGuiDataType_Float, &selectedObject->scale.y, 0.05f);
-                ImGui::DragScalar("Z##scale_z", ImGuiDataType_Float, &selectedObject->scale.z, 0.05f);
-            }
+
+            // Position
+            ImGui::Text("Position");
+            ImGui::DragScalar("X##position_x", ImGuiDataType_Float, &selectedObject->position.x, 0.05f);
+            ImGui::DragScalar("Y##position_y", ImGuiDataType_Float, &selectedObject->position.y, 0.05f);
+            ImGui::DragScalar("Z##position_z", ImGuiDataType_Float, &selectedObject->position.z, 0.05f);
+            ImGui::Separator();
+            // Rotation
+            ImGui::Text("Rotation");
+            ImGui::SliderAngle("X##rotation_x", &selectedObject->rotation.x, 0.0f, 360.0f);
+            ImGui::SliderAngle("Y##rotation_y", &selectedObject->rotation.y, 0.0f, 360.0f);
+            ImGui::SliderAngle("Z##rotation_z", &selectedObject->rotation.z, 0.0f, 360.0f);
+            ImGui::Separator();
+            // Scale
+            ImGui::Text("Scale");
+            ImGui::DragScalar("X##scale_x", ImGuiDataType_Float, &selectedObject->scale.x, 0.05f);
+            ImGui::DragScalar("Y##scale_y", ImGuiDataType_Float, &selectedObject->scale.y, 0.05f);
+            ImGui::DragScalar("Z##scale_z", ImGuiDataType_Float, &selectedObject->scale.z, 0.05f);
+
             ImGui::End();
         }
 
@@ -167,11 +160,72 @@ int main() {
     return 0;
 }
 
+// Möller–Trumbore intersection algorithm
+static int rayIntersectsTriangle(glm::vec3 origin, glm::vec3 dir, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, float* intersection)
+{
+    // Triangle edges
+    glm::vec3 e1(v1 - v0);
+    glm::vec3 e2(v2 - v0);
+
+    const float epsilon = 0.000001f;
+
+    glm::vec3 P, Q;
+    float i;
+    float t;
+
+    // Calculate determinant
+    P = glm::cross(dir, e2);
+    float det = glm::dot(e1, P);
+    // If determinant is (close to) zero, the ray lies in the plane of the triangle or parallel it's plane
+    if ((det > -epsilon) && (det < epsilon))
+    {
+        return 0;
+    }
+    float invDet = 1.0f / det;
+
+    // Distance from first vertex to ray origin
+    glm::vec3 T = origin - v0;
+
+    // Calculate u parameter
+    float u = glm::dot(T, P) * invDet;
+    // Intersection point lies outside of the triangle
+    if ((u < 0.0f) || (u > 1.0f))
+    {
+        return 0;
+    }
+
+    //Prepare to test v parameter
+    Q = glm::cross(T, e1);
+
+    // Calculate v parameter
+    float v = glm::dot(dir, Q) * invDet;
+    // Intersection point lies outside of the triangle
+    if (v < 0.f || u + v  > 1.f) return 0;
+
+    // Calculate t
+    t = glm::dot(e2, Q) * invDet;
+
+    if (t > epsilon)
+    {
+        // Triangle interesected
+        if (intersection)
+        {
+            *intersection = t;
+        }
+        return true;
+    }
+
+    // No intersection
+    return false;
+}
+
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        selectedObject = nullptr;
+        selectedObjectIndex = -1;
+    }
 
     float speed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? 5.0f : 1.0f;
 
@@ -187,6 +241,64 @@ void processInput(GLFWwindow* window) {
         camera.moveUp(deltaTime * speed);
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
         camera.moveDown(deltaTime * speed);
+
+    int w, h;
+    double mx, my;
+    uint32_t numIntersections = 0;
+
+    glfwGetCursorPos(window, &mx, &my);
+    glfwGetWindowSize(window, &w, &h);
+
+    struct
+    {
+        int32_t index = -1;
+        float lastPos = std::numeric_limits<float>::max();
+    } intersection;
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    {
+
+        glm::vec4 viewport = glm::vec4(0.0f, 0.0f, w, h);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.cameraZoom), (float)w / (float)h, 0.1f, 100.0f);
+        glm::mat4 view = camera.getViewMatrix();
+
+        for (int x = 0; x < objects.size(); x++) {
+
+            glm::mat4 model = objects[x]->getModelMatrix();
+
+            // Mouse world pos on near plane
+            glm::vec3 worldNear = glm::unProject(glm::vec3(float(mx), float(h - my), 0.0f), view * model, projection, viewport);
+            // Mouse world pos on far plane
+            glm::vec3 worldFar = glm::unProject(glm::vec3(float(mx), float(h - my), 1.0f), view * model, projection, viewport);
+
+            // Get ray between pos on near and far plane
+            glm::vec3 rayDir = glm::normalize(worldFar - worldNear);
+
+            Mesh mesh = objects[x]->getMesh();
+
+            std::vector<glm::vec3> verticesData = mesh.getVertices();
+
+            for (uint32_t i = 0; i < mesh.getVertexCount() / 3; i++)
+            {
+                float currIntersectionPos;
+                if (rayIntersectsTriangle(worldNear, rayDir, verticesData[i * 3], verticesData[i * 3 + 1], verticesData[i * 3 + 2], &currIntersectionPos))
+                {
+                    if (currIntersectionPos < intersection.lastPos)
+                    {
+                        intersection.lastPos = currIntersectionPos;
+                        intersection.index = i;
+                    }
+                    numIntersections++;
+                    selectedObject = objects[x];
+                    selectedObjectIndex = x;
+                    break;
+                }
+            }
+
+        }
+
+    }
+
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -194,7 +306,6 @@ void processInput(GLFWwindow* window) {
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
-
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
@@ -216,6 +327,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
 
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
         camera.processMouseMovement(xoffset, yoffset);
+
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called

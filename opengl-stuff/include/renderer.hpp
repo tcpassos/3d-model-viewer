@@ -18,9 +18,9 @@ public:
         this->shader = nullptr;
     }
 
-    void render(Object3D& object) {
+    void render(Object3D& object, bool selected) {
 
-        if (object.hasTexture()) {
+        if (object.hasTexture() && !selected) {
             shader = &textureShader;
             shader->use();
             this->shader->setInteger("texBuff", 0);

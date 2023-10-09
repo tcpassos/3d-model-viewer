@@ -25,4 +25,5 @@ public:
     void generate(unsigned int width, unsigned int height, unsigned char* data);
     // binds the texture as the current active GL_TEXTURE_2D texture object
     void bind() const;
+
 };

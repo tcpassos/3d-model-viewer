@@ -116,6 +116,10 @@ public:
         glBindVertexArray(0);
     }
 
+    Mesh getMesh() {
+        return this->mesh;
+    }
+
 private:
     Mesh mesh;
 };
