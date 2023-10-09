@@ -69,7 +69,7 @@ int main() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    ImGui::StyleColorsDark();
+    ImGui::StyleColorsClassic();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
@@ -77,6 +77,11 @@ int main() {
     Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
     ObjectReader objReader;
     std::vector<Object3D*> objects = objReader.readModel("assets/obj/batman/batman.obj");
+
+    std::vector<bool> selectedObjectIndexes;
+    for (int i = 0; i < objects.size(); i++) selectedObjectIndexes.push_back(false);
+    
+    Object3D* selectedObject = nullptr;
 
     // --------------------------------------------------------------
     // Render loop
@@ -100,27 +105,51 @@ int main() {
             renderer.render(*object);
         }
 
-        ImGui::Begin("Transformar");
-        
-        ImGui::Text("Rotacao em X: %.1f graus", glm::degrees(objects[0]->rotation.x));
-        ImGui::SliderFloat("##slider_rotation_x", &objects[0]->rotation.x, 0.0f, 6.28f);
-        
-        ImGui::Text("Rotacao em Y: %.1f graus", glm::degrees(objects[0]->rotation.y));
-        ImGui::SliderFloat("##slider_rotation_y", &objects[0]->rotation.y, 0.0f, 6.28f);
-
-        ImGui::Text("Rotacao em Z: %.1f graus", glm::degrees(objects[0]->rotation.z));
-        ImGui::SliderFloat("##slider_rotation_z", &objects[0]->rotation.z, 0.0f, 6.28f);
-
-        ImGui::Text("Escala em X", objects[0]->scale.x);
-        ImGui::InputFloat("##input_scale_x", &objects[0]->scale.x, 0.01, 10.0);
-
-        ImGui::Text("Escala em Y", objects[0]->scale.y);
-        ImGui::InputFloat("##input_scale_y", &objects[0]->scale.y, 0.01, 10.0);
-
-        ImGui::Text("Escala em Z", objects[0]->scale.z);
-        ImGui::InputFloat("##input_scale_z", &objects[0]->scale.z, 0.01, 10.0);
-
+        // Mesh selection window
+        ImGui::Begin("Meshes", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::BeginListBox("##meshes-list");
+            for (int i = 0; i < objects.size(); i++) {
+                std::string meshName = "mesh_" + std::to_string(i);
+                if (ImGui::Selectable(meshName.c_str(), selectedObjectIndexes[i])) {
+                    for (int j = 0; j < selectedObjectIndexes.size(); j++) {
+                        selectedObjectIndexes[j] = i == j ? true : false;
+                    }
+                    selectedObject = objects[i];
+                }
+            }
+        ImGui::EndListBox();
         ImGui::End();
+
+        if (selectedObject) {
+            // Transformations window
+            ImGui::Begin("Transform", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
+            // Unselect mesh if lost focus
+            if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGui::IsWindowFocused()) {
+                for (int i = 0; i < selectedObjectIndexes.size(); i++)
+                    selectedObjectIndexes[i] = false;
+                selectedObject = nullptr;
+            } else {
+                // Position
+                ImGui::Text("Position");
+                ImGui::DragScalar("X##position_x", ImGuiDataType_Float, &selectedObject->position.x, 0.05f);
+                ImGui::DragScalar("Y##position_y", ImGuiDataType_Float, &selectedObject->position.y, 0.05f);
+                ImGui::DragScalar("Z##position_z", ImGuiDataType_Float, &selectedObject->position.z, 0.05f);
+                ImGui::Separator();
+                // Rotation
+                ImGui::Text("Rotation");
+                ImGui::SliderAngle("X##rotation_x", &selectedObject->rotation.x, 0.0f, 360.0f);
+                ImGui::SliderAngle("Y##rotation_y", &selectedObject->rotation.y, 0.0f, 360.0f);
+                ImGui::SliderAngle("Z##rotation_z", &selectedObject->rotation.z, 0.0f, 360.0f);
+                ImGui::Separator();
+                // Scale
+                ImGui::Text("Scale");
+                ImGui::DragScalar("X##scale_x", ImGuiDataType_Float, &selectedObject->scale.x, 0.05f);
+                ImGui::DragScalar("Y##scale_y", ImGuiDataType_Float, &selectedObject->scale.y, 0.05f);
+                ImGui::DragScalar("Z##scale_z", ImGuiDataType_Float, &selectedObject->scale.z, 0.05f);
+            }
+            ImGui::End();
+        }
+
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
