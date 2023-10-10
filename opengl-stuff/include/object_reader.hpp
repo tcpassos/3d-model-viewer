@@ -102,11 +102,11 @@ private:
             if (!texturePath.empty()) {
                 std::string meshTexturePath = relativizePath(objPath, texturePath).c_str();
                 Texture2D meshTexture = ResourceManager::loadTexture(meshTexturePath.c_str(), texturePath);
-                return Mesh(vertices, textureCoords, normals, indices, meshTexture);
+                return Mesh(vertices, textureCoords, normals, indices, meshTexture, mesh->mName.C_Str());
             }
         }
 
-        return Mesh(vertices, normals, indices);
+        return Mesh(vertices, normals, indices, mesh->mName.C_Str());
     }
 
     std::string getTextureForMaterial(const aiMaterial* material, const std::string& objPath) {

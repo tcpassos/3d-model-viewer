@@ -82,7 +82,14 @@ int main() {
     // --------------------------------------------------------------
     Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
     ObjectReader objReader;
-    objects = objReader.readModel("assets/obj/madara/madara.obj");
+    
+    objects = objReader.readModel("assets/obj/batman/batman.obj");
+    for (Object3D* cat : objReader.readModel("assets/obj/cat/12221_Cat_v1_l3.obj")) {
+        cat->position = glm::vec3(0.1f, -2.75f, 0.1f);
+        cat->rotation = glm::vec3(glm::radians(268.0f), 0.0f, glm::radians(328.0f));
+        cat->scale = glm::vec3(0.1f);
+        objects.push_back(cat);
+    }
 
     // --------------------------------------------------------------
     // Render loop
@@ -115,7 +122,8 @@ int main() {
         ImGui::Begin("Meshes", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse);
         ImGui::BeginListBox("##meshes-list");
             for (int i = 0; i < objects.size(); i++) {
-                std::string meshName = "mesh_" + std::to_string(i);
+                std::string originalMeshName = objects[i]->mesh.getName();
+                std::string meshName = originalMeshName.empty() ? "mesh_" + std::to_string(i) : originalMeshName;
                 if (ImGui::Selectable(meshName.c_str(), i == selectedObjectIndex)) {
                     selectedObject = objects[i];
                     selectedObjectIndex = i;

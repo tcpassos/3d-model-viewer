@@ -11,7 +11,8 @@ public:
         const std::vector<glm::vec2>& texCoords,
         const std::vector<glm::vec3>& normals,
         const std::vector<GLuint>& indices,
-        Texture2D texture) : Mesh(vertices, normals, indices) {
+        Texture2D texture,
+        std::string name) : Mesh(vertices, normals, indices, name) {
 
         this->texture = texture;
         this->textureLoaded = true;
@@ -32,7 +33,8 @@ public:
 
     Mesh(const std::vector<glm::vec3>& vertices,
         const std::vector<glm::vec3>& normals,
-        const std::vector<GLuint>& indices) {
+        const std::vector<GLuint>& indices,
+        std::string name) {
 
         vertexCount = static_cast<GLsizei>(indices.size());
         this->textureLoaded = false;
@@ -93,6 +95,10 @@ public:
         return this->indices;
     }
 
+    std::string getName() {
+        return this->name;
+    }
+
     void deleteBuffers() {
         glDeleteBuffers(1, &VBO);
         glDeleteBuffers(1, &NBO);
@@ -108,4 +114,5 @@ private:
     std::vector<GLuint> indices;
     Texture2D texture;
     bool textureLoaded;
+    std::string name;
 };
