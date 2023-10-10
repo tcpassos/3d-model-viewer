@@ -81,7 +81,7 @@ int main() {
     // --------------------------------------------------------------
     Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
     ObjectReader objReader;
-    objects = objReader.readModel("assets/obj/batman/batman.obj");
+    objects = objReader.readModel("assets/obj/madara/madara.obj");
 
     // --------------------------------------------------------------
     // Render loop
@@ -277,11 +277,12 @@ void processInput(GLFWwindow* window) {
             Mesh mesh = objects[x]->getMesh();
 
             std::vector<glm::vec3> verticesData = mesh.getVertices();
+            std::vector<GLuint> indices = mesh.getIndices();
 
-            for (uint32_t i = 0; i < mesh.getVertexCount() / 3; i++)
-            {
+            for (uint32_t i = 0; i < indices.size(); i+=3)
+            {   
                 float currIntersectionPos;
-                if (rayIntersectsTriangle(worldNear, rayDir, verticesData[i * 3], verticesData[i * 3 + 1], verticesData[i * 3 + 2], &currIntersectionPos))
+                if (rayIntersectsTriangle(worldNear, rayDir, verticesData[indices[i]], verticesData[indices[i + 1]], verticesData[indices[i + 2]], &currIntersectionPos))
                 {
                     if (currIntersectionPos < intersection.lastPos)
                     {
@@ -291,7 +292,6 @@ void processInput(GLFWwindow* window) {
                     numIntersections++;
                     selectedObject = objects[x];
                     selectedObjectIndex = x;
-                    break;
                 }
             }
 
