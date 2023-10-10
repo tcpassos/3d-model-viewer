@@ -160,6 +160,7 @@
     <ClInclude Include="include\font.h" />
     <ClInclude Include="include\framebuffer.hpp" />
     <ClInclude Include="include\imgui\imconfig.h" />
+    <ClInclude Include="include\imgui\imfilebrowser.h" />
     <ClInclude Include="include\imgui\imgui.h" />
     <ClInclude Include="include\imgui\imgui_impl_glfw.h" />
     <ClInclude Include="include\imgui\imgui_impl_opengl3.h" />

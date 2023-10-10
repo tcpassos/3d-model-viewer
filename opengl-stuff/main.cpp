@@ -5,6 +5,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <imfilebrowser.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -71,29 +72,23 @@ int main() {
     // Configure global opengl state
     glEnable(GL_DEPTH_TEST);
 
-    // --------------------------------------------------------------
+    // -------------------------------------------------------------------
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImGui::StyleColorsClassic();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
+    ImGui::FileBrowser fileDialog;
+    fileDialog.SetTypeFilters({ ".obj" });
 
-    // --------------------------------------------------------------
+    // -------------------------------------------------------------------
     Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
     ObjectReader objReader;
-    
-    objects = objReader.readModel("assets/obj/batman/batman.obj");
-    for (Object3D* cat : objReader.readModel("assets/obj/cat/12221_Cat_v1_l3.obj")) {
-        cat->position = glm::vec3(0.1f, -2.75f, 0.1f);
-        cat->rotation = glm::vec3(glm::radians(268.0f), 0.0f, glm::radians(328.0f));
-        cat->scale = glm::vec3(0.1f);
-        objects.push_back(cat);
-    }
 
-    // --------------------------------------------------------------
+    // -------------------------------------------------------------------
     // Render loop
-    // --------------------------------------------------------------
+    // -------------------------------------------------------------------
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
@@ -110,6 +105,7 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        // Mesh rendering
         for (int x = 0; x < objects.size(); x++) {
             int renderModes = RenderModes_Normal;
             if (x == selectedObjectIndex) {
@@ -118,24 +114,36 @@ int main() {
             renderer.render(*objects[x], renderModes);
         }
 
+        // --------------------------------------------------------------
         // Mesh selection window
-        ImGui::Begin("Meshes", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse);
-        ImGui::BeginListBox("##meshes-list");
-            for (int i = 0; i < objects.size(); i++) {
-                std::string originalMeshName = objects[i]->mesh.getName();
-                std::string meshName = originalMeshName.empty() ? "mesh_" + std::to_string(i) : originalMeshName;
-                if (ImGui::Selectable(meshName.c_str(), i == selectedObjectIndex)) {
-                    selectedObject = objects[i];
-                    selectedObjectIndex = i;
-                }
+        ImGui::Begin("Meshes", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
+            // Mesh loader button
+            if (ImGui::Button("Import object"))
+                fileDialog.Open();
+            fileDialog.Display();
+            if (fileDialog.HasSelected()) {
+                for (Object3D* obj : objReader.readModel(fileDialog.GetSelected().string().c_str()))
+                    objects.push_back(obj);
+                fileDialog.ClearSelected();
             }
-        ImGui::EndListBox();
+            // List of meshes in scene
+            if (ImGui::BeginListBox("##meshes-list")) {
+                for (int i = 0; i < objects.size(); i++) {
+                    std::string originalMeshName = objects[i]->mesh.getName();
+                    std::string meshName = originalMeshName.empty() ? "mesh_" + std::to_string(i) : originalMeshName;
+                    if (ImGui::Selectable(meshName.c_str(), i == selectedObjectIndex)) {
+                        selectedObject = objects[i];
+                        selectedObjectIndex = i;
+                    }
+                }
+                ImGui::EndListBox();
+            }
         ImGui::End();
 
+        // --------------------------------------------------------------
+        // Transformations window
         if (selectedObject) {
-            // Transformations window
             ImGui::Begin("Transform", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
-
             // Position
             ImGui::Text("Position");
             ImGui::DragScalar("X##position_x", ImGuiDataType_Float, &selectedObject->position.x, 0.05f);
@@ -153,10 +161,11 @@ int main() {
             ImGui::DragScalar("X##scale_x", ImGuiDataType_Float, &selectedObject->scale.x, 0.05f);
             ImGui::DragScalar("Y##scale_y", ImGuiDataType_Float, &selectedObject->scale.y, 0.05f);
             ImGui::DragScalar("Z##scale_z", ImGuiDataType_Float, &selectedObject->scale.z, 0.05f);
-
             ImGui::End();
         }
 
+        // --------------------------------------------------------------
+        // Render windows
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

@@ -164,5 +164,8 @@
     <ClInclude Include="include\imgui\imstb_truetype.h">
       <Filter>Arquivos de Cabeçalho\imgui</Filter>
     </ClInclude>
+    <ClInclude Include="include\imgui\imfilebrowser.h">
+      <Filter>Arquivos de Cabeçalho\imgui</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
