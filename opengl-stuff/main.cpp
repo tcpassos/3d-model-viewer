@@ -23,6 +23,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
+void processMeshSelection(GLFWwindow* window);
 
 // Settings
 const unsigned int SCR_WIDTH = 800;
@@ -92,6 +93,7 @@ int main() {
         lastFrame = currentFrame;
 
         processInput(window);
+        processMeshSelection(window);
 
         // --------------------------------------------------------------
         glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
@@ -106,7 +108,7 @@ int main() {
         }
 
         // Mesh selection window
-        ImGui::Begin("Meshes", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin("Meshes", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse);
         ImGui::BeginListBox("##meshes-list");
             for (int i = 0; i < objects.size(); i++) {
                 std::string meshName = "mesh_" + std::to_string(i);
@@ -160,65 +162,6 @@ int main() {
     return 0;
 }
 
-// Möller–Trumbore intersection algorithm
-static int rayIntersectsTriangle(glm::vec3 origin, glm::vec3 dir, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2, float* intersection)
-{
-    // Triangle edges
-    glm::vec3 e1(v1 - v0);
-    glm::vec3 e2(v2 - v0);
-
-    const float epsilon = 0.000001f;
-
-    glm::vec3 P, Q;
-    float i;
-    float t;
-
-    // Calculate determinant
-    P = glm::cross(dir, e2);
-    float det = glm::dot(e1, P);
-    // If determinant is (close to) zero, the ray lies in the plane of the triangle or parallel it's plane
-    if ((det > -epsilon) && (det < epsilon))
-    {
-        return 0;
-    }
-    float invDet = 1.0f / det;
-
-    // Distance from first vertex to ray origin
-    glm::vec3 T = origin - v0;
-
-    // Calculate u parameter
-    float u = glm::dot(T, P) * invDet;
-    // Intersection point lies outside of the triangle
-    if ((u < 0.0f) || (u > 1.0f))
-    {
-        return 0;
-    }
-
-    //Prepare to test v parameter
-    Q = glm::cross(T, e1);
-
-    // Calculate v parameter
-    float v = glm::dot(dir, Q) * invDet;
-    // Intersection point lies outside of the triangle
-    if (v < 0.f || u + v  > 1.f) return 0;
-
-    // Calculate t
-    t = glm::dot(e2, Q) * invDet;
-
-    if (t > epsilon)
-    {
-        // Triangle interesected
-        if (intersection)
-        {
-            *intersection = t;
-        }
-        return true;
-    }
-
-    // No intersection
-    return false;
-}
-
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow* window) {
@@ -241,64 +184,92 @@ void processInput(GLFWwindow* window) {
         camera.moveUp(deltaTime * speed);
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
         camera.moveDown(deltaTime * speed);
+}
 
-    int w, h;
-    double mx, my;
-    uint32_t numIntersections = 0;
+// Möller–Trumbore intersection algorithm
+static bool rayIntersectsTriangle(const glm::vec3& origin, const glm::vec3& dir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float* intersection) {
+    const float epsilon = 0.000001f;
 
-    glfwGetCursorPos(window, &mx, &my);
-    glfwGetWindowSize(window, &w, &h);
+    glm::vec3 e1 = v1 - v0;
+    glm::vec3 e2 = v2 - v0;
 
-    struct
-    {
-        int32_t index = -1;
-        float lastPos = std::numeric_limits<float>::max();
-    } intersection;
+    glm::vec3 h = glm::cross(dir, e2);
+    float a = glm::dot(e1, h);
 
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-    {
-
-        glm::vec4 viewport = glm::vec4(0.0f, 0.0f, w, h);
-        glm::mat4 projection = glm::perspective(glm::radians(camera.cameraZoom), (float)w / (float)h, 0.1f, 100.0f);
-        glm::mat4 view = camera.getViewMatrix();
-
-        for (int x = 0; x < objects.size(); x++) {
-
-            glm::mat4 model = objects[x]->getModelMatrix();
-
-            // Mouse world pos on near plane
-            glm::vec3 worldNear = glm::unProject(glm::vec3(float(mx), float(h - my), 0.0f), view * model, projection, viewport);
-            // Mouse world pos on far plane
-            glm::vec3 worldFar = glm::unProject(glm::vec3(float(mx), float(h - my), 1.0f), view * model, projection, viewport);
-
-            // Get ray between pos on near and far plane
-            glm::vec3 rayDir = glm::normalize(worldFar - worldNear);
-
-            Mesh mesh = objects[x]->getMesh();
-
-            std::vector<glm::vec3> verticesData = mesh.getVertices();
-            std::vector<GLuint> indices = mesh.getIndices();
-
-            for (uint32_t i = 0; i < indices.size(); i+=3)
-            {   
-                float currIntersectionPos;
-                if (rayIntersectsTriangle(worldNear, rayDir, verticesData[indices[i]], verticesData[indices[i + 1]], verticesData[indices[i + 2]], &currIntersectionPos))
-                {
-                    if (currIntersectionPos < intersection.lastPos)
-                    {
-                        intersection.lastPos = currIntersectionPos;
-                        intersection.index = i;
-                    }
-                    numIntersections++;
-                    selectedObject = objects[x];
-                    selectedObjectIndex = x;
-                }
-            }
-
-        }
-
+    if (a > -epsilon && a < epsilon) {
+        return false; // Ray is parallel to the triangle
     }
 
+    float f = 1.0f / a;
+    glm::vec3 s = origin - v0;
+    float u = f * glm::dot(s, h);
+
+    if (u < 0.0f || u > 1.0f) {
+        return false; // Intersection point is outside the triangle
+    }
+
+    glm::vec3 q = glm::cross(s, e1);
+    float v = f * glm::dot(dir, q);
+
+    if (v < 0.0f || u + v > 1.0f) {
+        return false; // Intersection point is outside the triangle
+    }
+
+    float t = f * glm::dot(e2, q);
+
+    if (t > epsilon) {
+        if (intersection) {
+            *intersection = t;
+        }
+        return true; // Intersection point is valid
+    }
+
+    return false; // No intersection
+}
+
+void processMeshSelection(GLFWwindow* window) {
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS) {
+        return;
+    }
+
+    double cursorX, cursorY;
+    glfwGetCursorPos(window, &cursorX, &cursorY);
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+    glm::vec4 viewport = glm::vec4(0.0f, 0.0f, windowWidth, windowHeight);
+    glm::mat4 projection = glm::perspective(glm::radians(camera.cameraZoom), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+    glm::mat4 view = camera.getViewMatrix();
+
+    float closestIntersection = std::numeric_limits<float>::max();
+    int closestIntersectionIndex = -1;
+
+    for (int x = 0; x < objects.size(); ++x) {
+        glm::mat4 model = objects[x]->getModelMatrix();
+
+        glm::vec3 worldNear = glm::unProject(glm::vec3(float(cursorX), float(windowHeight - cursorY), 0.0f), view * model, projection, viewport);
+        glm::vec3 worldFar = glm::unProject(glm::vec3(float(cursorX), float(windowHeight - cursorY), 1.0f), view * model, projection, viewport);
+        glm::vec3 rayDir = glm::normalize(worldFar - worldNear);
+
+        Mesh mesh = objects[x]->getMesh();
+        std::vector<glm::vec3> verticesData = mesh.getVertices();
+        std::vector<GLuint> indices = mesh.getIndices();
+
+        for (uint32_t i = 0; i < indices.size(); i += 3) {
+            float intersectionPos;
+            if (rayIntersectsTriangle(worldNear, rayDir, verticesData[indices[i]], verticesData[indices[i + 1]], verticesData[indices[i + 2]], &intersectionPos)) {
+                if (intersectionPos < closestIntersection) {
+                    closestIntersection = intersectionPos;
+                    closestIntersectionIndex = x;
+                }
+            }
+        }
+    }
+
+    if (closestIntersectionIndex != -1) {
+        selectedObject = objects[closestIntersectionIndex];
+        selectedObjectIndex = closestIntersectionIndex;
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
