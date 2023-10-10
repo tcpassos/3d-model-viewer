@@ -27,7 +27,7 @@ public:
         } else {
             shader = &colorShader;
             shader->use();
-            shader->setVector4f("color", glm::vec4(0.7f));
+            shader->setVector4f("color", glm::vec4(1.0f));
         }
         
         glm::mat4 projection = glm::perspective(glm::radians(camera->cameraZoom), (float)screenDimensions.x / (float)screenDimensions.y, 0.1f, 100.0f);
