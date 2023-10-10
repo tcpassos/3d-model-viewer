@@ -27,6 +27,8 @@ public:
     static Shader    getShader(std::string name);
     // loads (and generates) a texture from file
     static Texture2D loadTexture(const char* file, std::string name);
+    // loads (and generates) a texture from color
+    static Texture2D loadTexture(const glm::vec4 color, std::string name);
     // retrieves a stored texture
     static Texture2D getTexture(std::string name);
     // properly de-allocates all loaded resources
@@ -38,6 +40,8 @@ private:
     static Shader    loadShaderFromFile(const char* vShaderFile, const char* fShaderFile, const char* gShaderFile = nullptr);
     // loads a single texture from file
     static Texture2D loadTextureFromFile(const char* file);
+    // loads a single texture from color
+    static Texture2D loadTextureFromColor(const glm::vec4 color);
 
     // resource storage
     static std::map<std::string, FrameBuffer> frameBuffers;

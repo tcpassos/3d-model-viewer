@@ -8,6 +8,7 @@
 
 class Object3D {
 public:
+    Mesh mesh;
     glm::vec3 position;
     glm::vec3 scale;
     glm::vec3 origin;
@@ -35,41 +36,6 @@ public:
         model = glm::scale(model, this->scale);                                                      // resize
         return model;
     }
-
-    void setPosition(glm::vec3 position) {
-        this->position = position;
-    }
-
-    void setPosition(float x, float y, float z) {
-        this->position.x = x;
-        this->position.y = y;
-        this->position.z = z;
-    }
-
-    void setScale(glm::vec3 scale) {
-        this->scale = scale;
-    }
-
-    void setScale(float x, float y, float z) {
-        this->scale.x = x;
-        this->scale.y = y;
-        this->scale.z = z;
-    }
-
-    void setScale(float scale) {
-        this->scale = glm::vec3(scale);
-    }
-
-    void setRotation(glm::vec3 rotation) {
-        this->rotation = rotation;
-    }
-
-    void setRotation(float x, float y, float z) {
-        this->rotation.x = x;
-        this->rotation.y = y;
-        this->rotation.z = z;
-    }
-
     void move(float x, float y, float z) {
         moveX(x); moveY(y), moveZ(z);
     }
@@ -101,25 +67,4 @@ public:
     void rotateZ(float rotation) {
         this->rotation.z += rotation;
     }
-
-    bool hasTexture() {
-        return mesh.hasTexture();
-    }
-
-    void draw() {
-        if (hasTexture()) {
-            glActiveTexture(GL_TEXTURE0);
-            mesh.getTexture().bind();
-        }
-        mesh.bind();
-        glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-    }
-
-    Mesh getMesh() {
-        return this->mesh;
-    }
-
-private:
-    Mesh mesh;
 };

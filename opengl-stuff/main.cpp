@@ -104,7 +104,11 @@ int main() {
         ImGui::NewFrame();
 
         for (int x = 0; x < objects.size(); x++) {
-            renderer.render(*objects[x], x == selectedObjectIndex);
+            int renderModes = RenderModes_Normal;
+            if (x == selectedObjectIndex) {
+                renderModes |= RenderModes_Wireframe;
+            }
+            renderer.render(*objects[x], renderModes);
         }
 
         // Mesh selection window
@@ -251,7 +255,7 @@ void processMeshSelection(GLFWwindow* window) {
         glm::vec3 worldFar = glm::unProject(glm::vec3(float(cursorX), float(windowHeight - cursorY), 1.0f), view * model, projection, viewport);
         glm::vec3 rayDir = glm::normalize(worldFar - worldNear);
 
-        Mesh mesh = objects[x]->getMesh();
+        Mesh mesh = objects[x]->mesh;
         std::vector<glm::vec3> verticesData = mesh.getVertices();
         std::vector<GLuint> indices = mesh.getIndices();
 

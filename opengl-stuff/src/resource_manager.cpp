@@ -54,6 +54,16 @@ Texture2D ResourceManager::loadTexture(const char* file, std::string name)
     return textureIt->second;
 }
 
+Texture2D ResourceManager::loadTexture(const glm::vec4 color, std::string name) {
+    auto textureIt = textures.find(name);
+    // If isn't present
+    if (textureIt == textures.end()) {
+        textures[name] = loadTextureFromColor(color);
+        return textures[name];
+    }
+    return textureIt->second;
+}
+
 Texture2D ResourceManager::getTexture(std::string name)
 {
     return textures[name];
@@ -146,5 +156,18 @@ Texture2D ResourceManager::loadTextureFromFile(const char* file) {
     texture.generate(width, height, data);
     // And finally free image data
     stbi_image_free(data);
+    return texture;
+}
+
+Texture2D ResourceManager::loadTextureFromColor(const glm::vec4 color) {
+    unsigned char* data = new unsigned char[4 * sizeof(unsigned char)];
+    data[0] = (unsigned char)(color.x * 255.0f);
+    data[1] = (unsigned char)(color.y * 255.0f);
+    data[2] = (unsigned char)(color.z * 255.0f);
+    data[3] = (unsigned char)(color.a * 255.0f);
+    Texture2D texture;
+    texture.internalFormat = GL_RGBA;
+    texture.imageFormat = GL_RGBA;
+    texture.generate(1, 1, data);
     return texture;
 }
