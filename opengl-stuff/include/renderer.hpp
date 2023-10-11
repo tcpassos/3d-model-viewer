@@ -23,6 +23,7 @@ public:
         this->lightPosition = glm::vec3(1.2f, 2.0f, 4.0f);
         this->shader = ResourceManager::loadShader("assets/shaders/default.vs", "assets/shaders/default.fs", nullptr, "defaultShader");
         this->wireframeTexture = ResourceManager::loadTexture(glm::vec4(0.0f, 1.0f, 1.0f, 1.0f), "wireframeTexture");
+        this->defaultTexture = ResourceManager::loadTexture(glm::vec4(0.7f, 0.7f, 0.7f, 1.0f), "defaultTexture");
 
         shader.use();
         shader.setInteger("texBuff", 0);
@@ -43,7 +44,11 @@ public:
         object.mesh.bind();
         // Normal render
         if (renderModes & RenderModes_Normal) {
-            object.mesh.getTexture().bind();
+            if (object.mesh.hasTexture()) {
+                object.mesh.getTexture().bind();
+            } else {
+                defaultTexture.bind();
+            }
             glDrawElements(GL_TRIANGLES, object.mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
         }
         // Wireframe render
@@ -61,6 +66,7 @@ private:
     Shader shader;
     Camera* camera;
     Texture2D wireframeTexture;
+    Texture2D defaultTexture;
     glm::vec3 lightPosition;
     glm::vec2 screenDimensions;
 };
