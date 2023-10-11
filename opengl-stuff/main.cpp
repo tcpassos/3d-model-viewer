@@ -283,6 +283,8 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
         std::vector<GLuint> indices = mesh.getIndices();
 
         for (uint32_t i = 0; i < indices.size(); i += 3) {
+            if (i + 3 >= indices.size())
+                break;
             float intersectionPos;
             if (rayIntersectsTriangle(worldNear, rayDir, verticesData[indices[i]], verticesData[indices[i + 1]], verticesData[indices[i + 2]], &intersectionPos)) {
                 if (intersectionPos < closestIntersection) {
