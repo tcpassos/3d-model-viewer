@@ -49,7 +49,9 @@ public:
         // Wireframe render
         if (renderModes & RenderModes_Wireframe) {
             wireframeTexture.bind();
-            glDrawElements(GL_LINES, object.mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glDrawElements(GL_TRIANGLES, object.mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
         // Unbind
         glBindVertexArray(0);

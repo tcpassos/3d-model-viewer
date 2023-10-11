@@ -5,21 +5,13 @@
 
 #include "mesh.hpp"
 #include "texture.h"
+#include "transformable.hpp"
 
-class Object3D {
+class Object3D: public Transformable {
 public:
     Mesh mesh;
-    glm::vec3 position;
-    glm::vec3 scale;
-    glm::vec3 origin;
-    glm::vec3 rotation;
 
-    Object3D(Mesh &objMesh): mesh(objMesh){
-        this->position = glm::vec3(0.0f);
-        this->scale = glm::vec3(1.0f);
-        this->origin = glm::vec3(0.0f);
-        this->rotation = glm::vec3(0.0f);
-    }
+    Object3D(Mesh &objMesh): Transformable(), mesh(objMesh) { }
 
     ~Object3D() {
         this->mesh.deleteBuffers();
@@ -35,36 +27,5 @@ public:
         model = glm::translate(model, glm::vec3(-this->origin.x, -this->origin.y, -this->origin.z)); // reset origin
         model = glm::scale(model, this->scale);                                                      // resize
         return model;
-    }
-    void move(float x, float y, float z) {
-        moveX(x); moveY(y), moveZ(z);
-    }
-
-    void moveX(float movement) {
-        this->position.x += movement;
-    }
-
-    void moveY(float movement) {
-        this->position.y += movement;
-    }
-
-    void moveZ(float movement) {
-        this->position.z += movement;
-    }
-
-    void rotate(float x, float y, float z) {
-        rotateX(x); rotateY(y); rotateZ(z);
-    }
-
-    void rotateX(float rotation) {
-        this->rotation.x += rotation;
-    }
-
-    void rotateY(float rotation) {
-        this->rotation.y += rotation;
-    }
-
-    void rotateZ(float rotation) {
-        this->rotation.z += rotation;
     }
 };

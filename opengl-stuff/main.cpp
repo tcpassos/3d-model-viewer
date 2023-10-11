@@ -20,15 +20,16 @@
 #include <resource_manager.h>
 #include <texture.h>
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+void mouseCursorPosCallback(GLFWwindow* window, double xpos, double ypos);
+void mouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
-void processMeshSelection(GLFWwindow* window);
+void markMesh(GLFWwindow* window, int meshIndex);
 
 // Settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1366;
+const unsigned int SCR_HEIGHT = 768;
 
 // Camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -42,8 +43,8 @@ float lastFrame = 0.0f;
 
 std::vector<Object3D*> objects;
 
+std::set<int> selectedIndexes;
 Object3D* selectedObject = nullptr;
-int selectedObjectIndex = -1;
 
 int main() {
     // GLFW: initialize and configure
@@ -59,9 +60,10 @@ int main() {
         return -1;
     }
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
+    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+    glfwSetCursorPosCallback(window, mouseCursorPosCallback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
+    glfwSetScrollCallback(window, mouseScrollCallback);
     // Tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     // GLAD: load all OpenGL function pointers
@@ -95,7 +97,6 @@ int main() {
         lastFrame = currentFrame;
 
         processInput(window);
-        processMeshSelection(window);
 
         // --------------------------------------------------------------
         glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
@@ -108,7 +109,7 @@ int main() {
         // Mesh rendering
         for (int x = 0; x < objects.size(); x++) {
             int renderModes = RenderModes_Normal;
-            if (x == selectedObjectIndex) {
+            if (selectedIndexes.find(x) != selectedIndexes.end()) { // mesh selected
                 renderModes |= RenderModes_Wireframe;
             }
             renderer.render(*objects[x], renderModes);
@@ -131,9 +132,9 @@ int main() {
                 for (int i = 0; i < objects.size(); i++) {
                     std::string originalMeshName = objects[i]->mesh.getName();
                     std::string meshName = originalMeshName.empty() ? "mesh_" + std::to_string(i) : originalMeshName;
-                    if (ImGui::Selectable(meshName.c_str(), i == selectedObjectIndex)) {
-                        selectedObject = objects[i];
-                        selectedObjectIndex = i;
+                    bool meshSelected = selectedIndexes.find(i) != selectedIndexes.end();
+                    if (ImGui::Selectable(meshName.c_str(), meshSelected)) {
+                        markMesh(window, i);
                     }
                 }
                 ImGui::EndListBox();
@@ -187,8 +188,8 @@ int main() {
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        selectedIndexes.clear();
         selectedObject = nullptr;
-        selectedObjectIndex = -1;
     }
 
     float speed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? 5.0f : 1.0f;
@@ -248,8 +249,60 @@ static bool rayIntersectsTriangle(const glm::vec3& origin, const glm::vec3& dir,
     return false; // No intersection
 }
 
-void processMeshSelection(GLFWwindow* window) {
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS) {
+/*
+* Processes the selection of a mesh
+*
+* If the multiple selection key is pressed it will select the mesh if it is not selected
+* or deselect it if it is already selected.
+* Otherwise, it will only mark the selected mesh.
+*/
+void markMesh(GLFWwindow* window, int meshIndex) {
+    bool multipleSelection = glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS;
+    if (multipleSelection) {
+        auto it = selectedIndexes.find(meshIndex);
+        if (it != selectedIndexes.end()) {
+            selectedIndexes.erase(it);
+        } else {
+            selectedIndexes.insert(meshIndex);
+        }
+    }
+    else {
+        selectedIndexes.clear();
+        selectedIndexes.insert(meshIndex);
+    }
+    selectedObject = (selectedIndexes.size() == 1) ? objects[*selectedIndexes.begin()] : nullptr;
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
+// glfw: whenever the mouse moves, this callback is called
+// -------------------------------------------------------
+void mouseCursorPosCallback(GLFWwindow* window, double xposIn, double yposIn) {
+    float xpos = static_cast<float>(xposIn);
+    float ypos = static_cast<float>(yposIn);
+
+    if (firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+        camera.processMouseMovement(xoffset, yoffset);
+}
+
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    if (button != GLFW_MOUSE_BUTTON_LEFT || action != GLFW_PRESS) {
         return;
     }
 
@@ -288,42 +341,12 @@ void processMeshSelection(GLFWwindow* window) {
     }
 
     if (closestIntersectionIndex != -1) {
-        selectedObject = objects[closestIntersectionIndex];
-        selectedObjectIndex = closestIntersectionIndex;
+        markMesh(window, closestIntersectionIndex);
     }
-}
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
-}
-
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
-
-    if (firstMouse) {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-    lastX = xpos;
-    lastY = ypos;
-
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
-        camera.processMouseMovement(xoffset, yoffset);
-
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+void mouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
     camera.zoom(static_cast<float>(yoffset));
 }
