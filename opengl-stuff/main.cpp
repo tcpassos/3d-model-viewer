@@ -19,6 +19,7 @@
 #include <renderer.hpp>
 #include <resource_manager.h>
 #include <texture.h>
+#include <transformable_group.hpp>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
@@ -41,10 +42,9 @@ bool firstMouse = true;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
+// Objects
 std::vector<Object3D*> objects;
-
-std::set<int> selectedIndexes;
-Object3D* selectedObject = nullptr;
+TransformableGroup selectedObjects;
 
 int main() {
     // GLFW: initialize and configure
@@ -109,7 +109,7 @@ int main() {
         // Mesh rendering
         for (int x = 0; x < objects.size(); x++) {
             int renderModes = RenderModes_Normal;
-            if (selectedIndexes.find(x) != selectedIndexes.end()) { // mesh selected
+            if (selectedObjects.contains(x)) {
                 renderModes |= RenderModes_Wireframe;
             }
             renderer.render(*objects[x], renderModes);
@@ -127,9 +127,9 @@ int main() {
             if (ImGui::Button("Delete")) {
                 objects.erase(std::remove_if(objects.begin(), objects.end(), [&](Object3D* objPtr) {
                     int index = std::distance(objects.begin(), std::find(objects.begin(), objects.end(), objPtr));
-                    return selectedIndexes.find(index) != selectedIndexes.end();
+                    return selectedObjects.contains(index);
                 }), objects.end());
-                selectedIndexes.clear();
+                selectedObjects.clear();
             }
 
             fileDialog.Display();
@@ -143,8 +143,7 @@ int main() {
                 for (int i = 0; i < objects.size(); i++) {
                     std::string originalMeshName = objects[i]->mesh.getName();
                     std::string meshName = originalMeshName.empty() ? "mesh_" + std::to_string(i) : originalMeshName;
-                    bool meshSelected = selectedIndexes.find(i) != selectedIndexes.end();
-                    if (ImGui::Selectable(meshName.c_str(), meshSelected)) {
+                    if (ImGui::Selectable(meshName.c_str(), selectedObjects.contains(i))) {
                         markMesh(window, i);
                     }
                 }
@@ -154,26 +153,28 @@ int main() {
 
         // --------------------------------------------------------------
         // Transformations window
-        if (selectedObject) {
+        if (!selectedObjects.empty()) {
             ImGui::Begin("Transform", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
             // Position
             ImGui::Text("Position");
-            ImGui::DragScalar("X##position_x", ImGuiDataType_Float, &selectedObject->position.x, 0.05f);
-            ImGui::DragScalar("Y##position_y", ImGuiDataType_Float, &selectedObject->position.y, 0.05f);
-            ImGui::DragScalar("Z##position_z", ImGuiDataType_Float, &selectedObject->position.z, 0.05f);
+            ImGui::DragScalar("X##position_x", ImGuiDataType_Float, &selectedObjects.position.x, 0.01f);
+            ImGui::DragScalar("Y##position_y", ImGuiDataType_Float, &selectedObjects.position.y, 0.01f);
+            ImGui::DragScalar("Z##position_z", ImGuiDataType_Float, &selectedObjects.position.z, 0.01f);
             ImGui::Separator();
             // Rotation
             ImGui::Text("Rotation");
-            ImGui::SliderAngle("X##rotation_x", &selectedObject->rotation.x, 0.0f, 360.0f);
-            ImGui::SliderAngle("Y##rotation_y", &selectedObject->rotation.y, 0.0f, 360.0f);
-            ImGui::SliderAngle("Z##rotation_z", &selectedObject->rotation.z, 0.0f, 360.0f);
+            ImGui::SliderAngle("X##rotation_x", &selectedObjects.rotation.x, -180.0f, 180.0f);
+            ImGui::SliderAngle("Y##rotation_y", &selectedObjects.rotation.y, -180.0f, 180.0f);
+            ImGui::SliderAngle("Z##rotation_z", &selectedObjects.rotation.z, -180.0f, 180.0f);
             ImGui::Separator();
             // Scale
             ImGui::Text("Scale");
-            ImGui::DragScalar("X##scale_x", ImGuiDataType_Float, &selectedObject->scale.x, 0.05f);
-            ImGui::DragScalar("Y##scale_y", ImGuiDataType_Float, &selectedObject->scale.y, 0.05f);
-            ImGui::DragScalar("Z##scale_z", ImGuiDataType_Float, &selectedObject->scale.z, 0.05f);
+            ImGui::DragScalar("X##scale_x", ImGuiDataType_Float, &selectedObjects.scale.x, 0.01f);
+            ImGui::DragScalar("Y##scale_y", ImGuiDataType_Float, &selectedObjects.scale.y, 0.01f);
+            ImGui::DragScalar("Z##scale_z", ImGuiDataType_Float, &selectedObjects.scale.z, 0.01f);
             ImGui::End();
+
+            selectedObjects.update();
         }
 
         // --------------------------------------------------------------
@@ -264,18 +265,16 @@ static bool rayIntersectsTriangle(const glm::vec3& origin, const glm::vec3& dir,
 void markMesh(GLFWwindow* window, int meshIndex) {
     bool multipleSelection = glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS;
     if (multipleSelection) {
-        auto it = selectedIndexes.find(meshIndex);
-        if (it != selectedIndexes.end()) {
-            selectedIndexes.erase(it);
+        if (selectedObjects.contains(meshIndex)) {
+            selectedObjects.remove(meshIndex);
         } else {
-            selectedIndexes.insert(meshIndex);
+            selectedObjects.add(meshIndex, objects[meshIndex]);
         }
     }
     else {
-        selectedIndexes.clear();
-        selectedIndexes.insert(meshIndex);
+        selectedObjects.clear();
+        selectedObjects.add(meshIndex, objects[meshIndex]);
     }
-    selectedObject = (selectedIndexes.size() == 1) ? objects[*selectedIndexes.begin()] : nullptr;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -348,8 +347,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     if (closestIntersectionIndex != -1) {
         markMesh(window, closestIntersectionIndex);
     } else {
-        selectedIndexes.clear();
-        selectedObject = nullptr;
+        selectedObjects.clear();
     }
 }
 

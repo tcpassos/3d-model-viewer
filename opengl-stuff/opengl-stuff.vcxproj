@@ -183,6 +183,7 @@
     <ClInclude Include="include\texture.h" />
     <ClInclude Include="include\text_renderer.h" />
     <ClInclude Include="include\transformable.hpp" />
+    <ClInclude Include="include\transformable_group.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

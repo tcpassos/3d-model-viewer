@@ -167,5 +167,8 @@
     <ClInclude Include="include\imgui\imfilebrowser.h">
       <Filter>Arquivos de Cabeçalho\imgui</Filter>
     </ClInclude>
+    <ClInclude Include="include\transformable_group.hpp">
+      <Filter>Arquivos de Cabeçalho</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
