@@ -11,8 +11,7 @@ public:
         const std::vector<glm::vec2>& texCoords,
         const std::vector<glm::vec3>& normals,
         const std::vector<GLuint>& indices,
-        Texture2D texture,
-        std::string name) : Mesh(vertices, normals, indices, name) {
+        Texture2D texture, std::string name) : Mesh(vertices, normals, indices, name) {
 
         this->texture = texture;
         this->textureLoaded = true;
@@ -40,6 +39,7 @@ public:
         this->textureLoaded = false;
         this->vertices = vertices;
         this->indices = indices;
+        this->name = name;
 
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);

@@ -155,7 +155,7 @@ int main() {
             }
 
             // List of meshes in scene
-            if (ImGui::BeginListBox("##meshes-list")) {
+            if (ImGui::BeginListBox("##meshes-list", ImVec2(300.0f, 200.0f))) {
                 for (int i = 0; i < objects.size(); i++) {
                     std::string originalMeshName = objects[i]->mesh.getName();
                     std::string meshName = originalMeshName.empty() ? "mesh_" + std::to_string(i) : originalMeshName;
