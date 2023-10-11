@@ -94,6 +94,41 @@ int main() {
     ObjectReader objReader;
 
     // -------------------------------------------------------------------
+    // CREATES A FANTASTIC CUBE!
+
+    Texture2D groundTexture = ResourceManager::loadTexture(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), "groundTexture");
+    std::vector<glm::vec3> groundVertices = {
+        glm::vec3(-10.0f, 0.0f, -10.0f),
+        glm::vec3(10.0f, 0.0f, -10.0f),
+        glm::vec3(10.0f, 0.0f, 10.0f),
+        glm::vec3(-10.0f, 0.0f, 10.0f)
+    };
+    std::vector<glm::vec2> groundTexCoords = {
+        glm::vec2(0.0f, 0.0f),
+        glm::vec2(1.0f, 0.0f),
+        glm::vec2(1.0f, 1.0f),
+        glm::vec2(0.0f, 1.0f)
+    };
+    std::vector<glm::vec3> groundNormals = {
+        glm::vec3(0.0f, 1.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    };
+    std::vector<unsigned int> groundIndices = {
+      0, 1, 2, 2, 3, 0
+    };
+    Mesh groundMesh(groundVertices, groundTexCoords, groundNormals, groundIndices, groundTexture, "ground");
+    Object3D ground(groundMesh);
+
+    // Add objects in scene
+    objects.push_back(&ground);
+    for (Object3D* obj : objReader.readModel("assets/obj/cube/cube.obj")) {
+        obj->moveY(1.01f);
+        objects.push_back(obj);
+    }
+
+    // -------------------------------------------------------------------
     // Render loop
     // -------------------------------------------------------------------
     while (!glfwWindowShouldClose(window)) {
