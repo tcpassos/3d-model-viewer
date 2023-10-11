@@ -14,11 +14,13 @@
 
 #include <shader.h>
 #include <camera.hpp>
+#include <font.h>
 #include <mesh.hpp>
 #include <object_reader.hpp>
 #include <renderer.hpp>
 #include <resource_manager.h>
 #include <texture.h>
+#include <text_renderer.h>
 #include <transformable_group.hpp>
 
 void processInput(GLFWwindow* window);
@@ -92,6 +94,10 @@ int main() {
     Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
     // Object reader
     ObjectReader objReader;
+    // Text renderer
+    TextRenderer textRenderer(SCR_WIDTH, SCR_HEIGHT, Font("assets/fonts/Gobold Regular.otf", 11));
+    textRenderer.setHorizontalAlignment(TextLeft);
+    textRenderer.setColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
     // -------------------------------------------------------------------
     // Render loop
@@ -109,6 +115,14 @@ int main() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        // Info
+        textRenderer.renderText("Controls:", 10.0f, 10.0f);
+        textRenderer.renderText("[AWSD] Movement", 10.0f, 25.0f);
+        textRenderer.renderText("[Space] Up", 10.0f, 40.0f);
+        textRenderer.renderText("[Ctrl] Down", 10.0f, 55.0f);
+        textRenderer.renderText("[Alt] Multiple selection", 10.0f, 70.0f);
+        textRenderer.renderText("[Right click] Camera", 10.0f, 85.0f);
 
         // Mesh rendering
         for (int x = 0; x < objects.size(); x++) {
