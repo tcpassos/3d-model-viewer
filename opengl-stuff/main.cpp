@@ -119,8 +119,19 @@ int main() {
         // Mesh selection window
         ImGui::Begin("Meshes", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
             // Mesh loader button
-            if (ImGui::Button("Import object"))
+            if (ImGui::Button("Import object")) {
                 fileDialog.Open();
+            }
+            // Mesh remove button
+            ImGui::SameLine();
+            if (ImGui::Button("Delete")) {
+                objects.erase(std::remove_if(objects.begin(), objects.end(), [&](Object3D* objPtr) {
+                    int index = std::distance(objects.begin(), std::find(objects.begin(), objects.end(), objPtr));
+                    return selectedIndexes.find(index) != selectedIndexes.end();
+                }), objects.end());
+                selectedIndexes.clear();
+            }
+
             fileDialog.Display();
             if (fileDialog.HasSelected()) {
                 for (Object3D* obj : objReader.readModel(fileDialog.GetSelected().string().c_str()))
