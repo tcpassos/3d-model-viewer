@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include "camera.hpp"
+#include "light.hpp"
 #include "object_3d.hpp"
 #include "resource_manager.h"
 #include "shader.h"
@@ -17,10 +18,11 @@ typedef int RenderModes;
 
 class Renderer {
 public:
+    Light light;
+
     Renderer(glm::vec2 dimensions, Camera& camera) {
         this->screenDimensions = dimensions;
         this->camera = &camera;
-        this->lightPosition = glm::vec3(1.2f, 2.0f, 4.0f);
         this->shader = ResourceManager::loadShader("assets/shaders/default.vs", "assets/shaders/default.fs", nullptr, "defaultShader");
         this->wireframeTexture = ResourceManager::loadTexture(glm::vec4(0.0f, 1.0f, 1.0f, 1.0f), "wireframeTexture");
         this->defaultTexture = ResourceManager::loadTexture(glm::vec4(0.7f, 0.7f, 0.7f, 1.0f), "defaultTexture");
@@ -38,14 +40,27 @@ public:
         shader.setMatrix4("projection", projection);
         shader.setMatrix4("view", camera->getViewMatrix());
         shader.setMatrix4("model", object.getModelMatrix());
-        shader.setVector3f("lightPos", lightPosition);
         shader.setVector3f("viewPos", camera->position);
+
+        shader.setVector3f("light.position", light.position);
+        shader.setVector3f("light.ambient", light.getAmbientColor());
+        shader.setVector3f("light.diffuse", light.getDiffuseColor());
+        shader.setVector3f("light.specular", light.getSpecularColor());
+
+        Material material = object.mesh.getMaterial();
+        shader.setVector3f("material.ambient", material.ambientColor);
+        shader.setVector3f("material.diffuse", material.diffuseColor);
+        shader.setVector3f("material.specular", material.specularColor);
+        shader.setFloat("material.shininess", material.shininess);
+        shader.setFloat("material.opacity", material.opacity);
+
         // Bind mesh attribute array
         object.mesh.bind();
         // Normal render
         if (renderModes & RenderModes_Normal) {
-            if (object.mesh.hasTexture()) {
-                object.mesh.getTexture().bind();
+            // If has texture
+            if (material.texture.id != 0) {
+                material.texture.bind();
             } else {
                 defaultTexture.bind();
             }
@@ -67,6 +82,5 @@ private:
     Camera* camera;
     Texture2D wireframeTexture;
     Texture2D defaultTexture;
-    glm::vec3 lightPosition;
     glm::vec2 screenDimensions;
 };

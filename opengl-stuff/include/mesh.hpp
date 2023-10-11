@@ -3,7 +3,7 @@
 #include <vector>
 #include <glad/glad.h>
 
-#include "texture.h"
+#include "material.hpp"
 
 class Mesh {
 public:
@@ -11,10 +11,7 @@ public:
         const std::vector<glm::vec2>& texCoords,
         const std::vector<glm::vec3>& normals,
         const std::vector<GLuint>& indices,
-        Texture2D texture, std::string name) : Mesh(vertices, normals, indices, name) {
-
-        this->texture = texture;
-        this->textureLoaded = true;
+        Material material, std::string name) : Mesh(vertices, normals, indices, material, name) {
 
         glGenBuffers(1, &TBO);
         glBindVertexArray(VAO);
@@ -33,10 +30,10 @@ public:
     Mesh(const std::vector<glm::vec3>& vertices,
         const std::vector<glm::vec3>& normals,
         const std::vector<GLuint>& indices,
-        std::string name) {
+        Material material, std::string name) {
 
         vertexCount = static_cast<GLsizei>(indices.size());
-        this->textureLoaded = false;
+        this->material = material;
         this->vertices = vertices;
         this->indices = indices;
         this->name = name;
@@ -79,12 +76,8 @@ public:
         return this->vertexCount;
     }
 
-    bool hasTexture() {
-        return this->textureLoaded;
-    }
-
-    Texture2D getTexture() {
-        return this->texture;
+    Material& getMaterial() {
+        return this->material;
     }
 
     std::vector<glm::vec3>& getVertices() {
@@ -112,7 +105,6 @@ private:
     GLsizei vertexCount;
     std::vector<glm::vec3> vertices;
     std::vector<GLuint> indices;
-    Texture2D texture;
-    bool textureLoaded;
+    Material material;
     std::string name;
 };

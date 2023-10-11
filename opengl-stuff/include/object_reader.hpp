@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 
 #include "object_3d.hpp"
+#include "material.hpp"
 #include "resource_manager.h"
 
 namespace fs = std::filesystem;
@@ -97,18 +98,18 @@ private:
 
         // Try to get mesh texture
         if (mesh->mMaterialIndex >= 0 && mesh->mMaterialIndex < scene->mNumMaterials) {
-            std::string texturePath = getTextureForMaterial(scene->mMaterials[mesh->mMaterialIndex], objPath);
-            if (!texturePath.empty()) {
-                std::string meshTexturePath = relativizePath(objPath, texturePath).c_str();
-                Texture2D meshTexture = ResourceManager::loadTexture(meshTexturePath.c_str(), texturePath);
-                return Mesh(vertices, textureCoords, normals, indices, meshTexture, mesh->mName.C_Str());
-            }
+            Material material = createMaterial(scene->mMaterials[mesh->mMaterialIndex], objPath);
+            return Mesh(vertices, textureCoords, normals, indices, material, mesh->mName.C_Str());
         }
 
-        return Mesh(vertices, normals, indices, mesh->mName.C_Str());
+        Material defaultMaterial;
+        return Mesh(vertices, normals, indices, defaultMaterial, mesh->mName.C_Str());
     }
 
-    std::string getTextureForMaterial(const aiMaterial* material, const std::string& objPath) {
+    Material createMaterial(const aiMaterial* material, const std::string& objPath) {
+        Material mat;
+
+        // Try to get material texture
         for (unsigned int i = 0; i < AI_TEXTURE_TYPE_MAX; ++i) {
             aiTextureType textureType = static_cast<aiTextureType>(i);
             unsigned int textureCount = material->GetTextureCount(textureType);
@@ -117,11 +118,34 @@ private:
                 aiString texturePath;
                 if (material->GetTexture(textureType, j, &texturePath) == AI_SUCCESS) {
                     std::string texturePathStr = texturePath.C_Str();
-                    return texturePathStr;
+                    if (!texturePathStr.empty()) {
+                        std::string meshTexturePath = relativizePath(objPath, texturePathStr).c_str();
+                        Texture2D meshTexture = ResourceManager::loadTexture(meshTexturePath.c_str(), texturePathStr);
+                        mat.texture = meshTexture;
+                    }
                 }
             }
         }
-        return "";
+
+        // Material properties
+        aiColor3D ambientColor(1.f, 1.f, 1.f);
+        aiColor3D diffuseColor(1.f, 1.f, 1.f);
+        aiColor3D specularColor(1.f, 1.f, 1.f);
+        float shininess;
+        float opacity;
+
+        if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_AMBIENT, ambientColor))
+            mat.ambientColor = glm::vec3(ambientColor.r, ambientColor.g, ambientColor.b);
+        if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor))
+            mat.diffuseColor = glm::vec3(diffuseColor.r, diffuseColor.g, diffuseColor.b);
+        if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_SPECULAR, specularColor))
+            mat.specularColor = glm::vec3(specularColor.r, specularColor.g, specularColor.b);
+        if (AI_SUCCESS == material->Get(AI_MATKEY_SHININESS, shininess))
+            mat.shininess = shininess;
+        if (AI_SUCCESS == material->Get(AI_MATKEY_OPACITY, opacity))
+            mat.opacity = opacity;
+
+        return mat;
     }
 
     std::string relativizePath(const std::string& basePath, const std::string& relativePath) {

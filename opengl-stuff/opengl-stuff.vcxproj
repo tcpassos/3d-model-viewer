@@ -170,6 +170,8 @@
     <ClInclude Include="include\imgui\imstb_textedit.h" />
     <ClInclude Include="include\imgui\imstb_truetype.h" />
     <ClInclude Include="include\inipp.h" />
+    <ClInclude Include="include\light.hpp" />
+    <ClInclude Include="include\material.hpp" />
     <ClInclude Include="include\mesh.hpp" />
     <ClInclude Include="include\object_3d.hpp" />
     <ClInclude Include="include\object_reader.hpp" />
