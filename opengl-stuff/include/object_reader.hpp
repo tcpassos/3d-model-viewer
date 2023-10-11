@@ -31,9 +31,6 @@ public:
 
         std::vector<Mesh> meshes;
         std::vector<Object3D*> objects;
-        std::vector<glm::vec3> vertices;
-        std::vector<glm::vec2> textureCoords;
-        std::vector<GLuint> indices;
 
         processNode(scene->mRootNode, scene, meshes, filePath);
 

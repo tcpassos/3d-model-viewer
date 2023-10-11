@@ -31,7 +31,7 @@ void mouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 static bool rayIntersectsTriangle(const glm::vec3& origin, const glm::vec3& dir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float* intersection);
 void markMesh(GLFWwindow* window, int meshIndex);
-void deleteSelectedMeshes();
+void deleteSelectedObjects();
 
 // Settings
 const unsigned int SCR_WIDTH = 1366;
@@ -124,7 +124,7 @@ int main() {
         textRenderer.renderText("[Alt] Multiple selection", 10.0f, 70.0f);
         textRenderer.renderText("[Right click] Camera", 10.0f, 85.0f);
 
-        // Mesh rendering
+        // Object rendering
         for (int x = 0; x < objects.size(); x++) {
             int renderModes = RenderModes_Normal;
             if (selectedObjects.contains(x)) {
@@ -134,11 +134,11 @@ int main() {
         }
 
         // --------------------------------------------------------------
-        // Mesh selection window
-        ImGui::Begin("Meshes", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
+        // Object selection window
+        ImGui::Begin("Objects", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
 
             // Mesh loader button
-            if (ImGui::Button("Import object")) {
+            if (ImGui::Button("Import objects")) {
                 fileDialog.Open();
             }
             fileDialog.Display();
@@ -148,10 +148,10 @@ int main() {
                 fileDialog.ClearSelected();
             }
 
-            // Mesh remove button
+            // Object remove button
             ImGui::SameLine();
             if (ImGui::Button("Delete")) {
-                deleteSelectedMeshes();
+                deleteSelectedObjects();
             }
 
             // List of meshes in scene
@@ -311,7 +311,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     // Remove selected meshes
     if (key == GLFW_KEY_DELETE && action == GLFW_PRESS) {
-        deleteSelectedMeshes();
+        deleteSelectedObjects();
     }
     // Camera positions
     float distance = 15.0f;
@@ -421,7 +421,7 @@ void markMesh(GLFWwindow* window, int meshIndex) {
 }
 
 // Delete all selected meshes
-void deleteSelectedMeshes() {
+void deleteSelectedObjects() {
     objects.erase(std::remove_if(objects.begin(), objects.end(), [&](Object3D* objPtr) {
         int index = std::distance(objects.begin(), std::find(objects.begin(), objects.end(), objPtr));
         return selectedObjects.contains(index);
