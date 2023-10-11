@@ -9,7 +9,11 @@
 
 class TransformableGroup: public Transformable {
 public:
-    TransformableGroup() : Transformable() { }
+    TransformableGroup() : Transformable() {
+        previousPosition = this->position;
+        previousRotation = this->rotation;
+        previousScale = this->scale;
+    }
     
     void add(int id, Transformable* transformable) {
         transformables[id] = transformable;
@@ -39,23 +43,27 @@ public:
     }
 
     void update() {
-        if (transformables.size() == 1) {
-            Transformable* firstElement = transformables.begin()->second;
-            firstElement->position = this->position;
-            firstElement->rotation = this->rotation;
-            firstElement->scale = this->scale;
-        } else {
-            for (const auto& [id, transformable] : transformables) {
-                transformable->position += this->position;
-                transformable->rotation += this->rotation;
-                transformable->scale += glm::vec3(this->scale.x - 1.0f, this->scale.y - 1.0f, this->scale.z - 1.0f);
-            }
-            updateAttributes();
+        glm::vec3 deltaPosition = previousPosition - this->position;
+        glm::vec3 deltaRotation = previousRotation - this->rotation;
+        glm::vec3 deltaScale = previousScale - this->scale;
+
+        for (const auto& [id, transformable] : transformables) {
+            transformable->position -= deltaPosition;
+            transformable->rotation -= deltaRotation;
+            transformable->scale -= deltaScale;
         }
+
+        previousPosition = this->position;
+        previousRotation = this->rotation;
+        previousScale = this->scale;
     }
 
 private:
     std::map<int, Transformable*> transformables;
+
+    glm::vec3 previousPosition;
+    glm::vec3 previousRotation;
+    glm::vec3 previousScale;
 
     void updateAttributes() {
         if (transformables.size() == 1) {
@@ -68,5 +76,8 @@ private:
             this->rotation = glm::vec3(0.0f);
             this->scale = glm::vec3(1.0f);
         }
+        previousPosition = this->position;
+        previousRotation = this->rotation;
+        previousScale = this->scale;
     }
 };

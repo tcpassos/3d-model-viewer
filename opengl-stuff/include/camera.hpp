@@ -100,10 +100,13 @@ public:
             cameraZoom = 45.0f;
     }
 
-private:
-
     // Calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors() {
+        // make sure that when pitch is out of bounds, screen doesn't get flipped
+        if (pitch > 89.0f)
+            pitch = 89.0f;
+        if (pitch < -89.0f)
+            pitch = -89.0f;
         // calculate the new Front vector
         glm::vec3 newFront;
         newFront.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));

@@ -21,12 +21,15 @@
 #include <texture.h>
 #include <transformable_group.hpp>
 
+void processInput(GLFWwindow* window);
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 void mouseCursorPosCallback(GLFWwindow* window, double xpos, double ypos);
 void mouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow* window);
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+static bool rayIntersectsTriangle(const glm::vec3& origin, const glm::vec3& dir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float* intersection);
 void markMesh(GLFWwindow* window, int meshIndex);
+void deleteSelectedMeshes();
 
 // Settings
 const unsigned int SCR_WIDTH = 1366;
@@ -60,11 +63,11 @@ int main() {
         return -1;
     }
     glfwMakeContextCurrent(window);
+    glfwSetKeyCallback(window, keyCallback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
     glfwSetCursorPosCallback(window, mouseCursorPosCallback);
-    glfwSetMouseButtonCallback(window, mouseButtonCallback);
     glfwSetScrollCallback(window, mouseScrollCallback);
-    // Tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     // GLAD: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -73,19 +76,21 @@ int main() {
     }
     // Configure global opengl state
     glEnable(GL_DEPTH_TEST);
-
-    // -------------------------------------------------------------------
+    // ImGUI: initialize and configure
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImGui::StyleColorsClassic();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
-    ImGui::FileBrowser fileDialog;
-    fileDialog.SetTypeFilters({ ".obj" });
 
     // -------------------------------------------------------------------
+    // File browser
+    ImGui::FileBrowser fileDialog;
+    fileDialog.SetTypeFilters({ ".obj" });
+    // Object renderer
     Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
+    // Object reader
     ObjectReader objReader;
 
     // -------------------------------------------------------------------
@@ -95,7 +100,6 @@ int main() {
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-
         processInput(window);
 
         // --------------------------------------------------------------
@@ -133,11 +137,7 @@ int main() {
             // Mesh remove button
             ImGui::SameLine();
             if (ImGui::Button("Delete")) {
-                objects.erase(std::remove_if(objects.begin(), objects.end(), [&](Object3D* objPtr) {
-                    int index = std::distance(objects.begin(), std::find(objects.begin(), objects.end(), objPtr));
-                    return selectedObjects.contains(index);
-                }), objects.end());
-                selectedObjects.clear();
+                deleteSelectedMeshes();
             }
 
             // List of meshes in scene
@@ -165,11 +165,9 @@ int main() {
             ImGui::Separator();
             // Rotation
             ImGui::Text("Rotation");
-            float minAngle = selectedObjects.size() == 1 ? -180.0f : - 1.0f;
-            float maxAngle = selectedObjects.size() == 1 ? 180.0f : 1.0f;
-            ImGui::SliderAngle("X##rotation_x", &selectedObjects.rotation.x, minAngle, maxAngle);
-            ImGui::SliderAngle("Y##rotation_y", &selectedObjects.rotation.y, minAngle, maxAngle);
-            ImGui::SliderAngle("Z##rotation_z", &selectedObjects.rotation.z, minAngle, maxAngle);
+            ImGui::SliderAngle("X##rotation_x", &selectedObjects.rotation.x, -360.0f, 360.0f);
+            ImGui::SliderAngle("Y##rotation_y", &selectedObjects.rotation.y, -360.0f, 360.0f);
+            ImGui::SliderAngle("Z##rotation_z", &selectedObjects.rotation.z, -360.0f, 360.0f);
             ImGui::Separator();
             // Scale
             ImGui::Text("Scale");
@@ -177,7 +175,7 @@ int main() {
             ImGui::DragScalar("Y##scale_y", ImGuiDataType_Float, &selectedObjects.scale.y, 0.01f);
             ImGui::DragScalar("Z##scale_z", ImGuiDataType_Float, &selectedObjects.scale.z, 0.01f);
             ImGui::End();
-
+            // Update selected objects attributes
             selectedObjects.update();
         }
 
@@ -185,23 +183,23 @@ int main() {
         // Render windows
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        // --------------------------------------------------------------
+        // OpenGL stuff
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
     // ------------------------------------------------------------------
+    // Clear allocated resources.
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-
-    // GLFW: terminate, clearing all previously allocated GLFW resources.
     glfwTerminate();
     return 0;
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
+// ================================================================================================
+// Callbacks
+// ================================================================================================
+
 void processInput(GLFWwindow* window) {
     float speed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? 5.0f : 1.0f;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -218,77 +216,10 @@ void processInput(GLFWwindow* window) {
         camera.moveDown(deltaTime * speed);
 }
 
-// Möller–Trumbore intersection algorithm
-static bool rayIntersectsTriangle(const glm::vec3& origin, const glm::vec3& dir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float* intersection) {
-    const float epsilon = 0.000001f;
-
-    glm::vec3 e1 = v1 - v0;
-    glm::vec3 e2 = v2 - v0;
-
-    glm::vec3 h = glm::cross(dir, e2);
-    float a = glm::dot(e1, h);
-
-    if (a > -epsilon && a < epsilon) {
-        return false; // Ray is parallel to the triangle
-    }
-
-    float f = 1.0f / a;
-    glm::vec3 s = origin - v0;
-    float u = f * glm::dot(s, h);
-
-    if (u < 0.0f || u > 1.0f) {
-        return false; // Intersection point is outside the triangle
-    }
-
-    glm::vec3 q = glm::cross(s, e1);
-    float v = f * glm::dot(dir, q);
-
-    if (v < 0.0f || u + v > 1.0f) {
-        return false; // Intersection point is outside the triangle
-    }
-
-    float t = f * glm::dot(e2, q);
-
-    if (t > epsilon) {
-        if (intersection) {
-            *intersection = t;
-        }
-        return true; // Intersection point is valid
-    }
-
-    return false; // No intersection
-}
-
-/*
-* Processes the selection of a mesh
-*
-* If the multiple selection key is pressed it will select the mesh if it is not selected
-* or deselect it if it is already selected.
-* Otherwise, it will only mark the selected mesh.
-*/
-void markMesh(GLFWwindow* window, int meshIndex) {
-    bool multipleSelection = glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS;
-    if (multipleSelection) {
-        if (selectedObjects.contains(meshIndex)) {
-            selectedObjects.remove(meshIndex);
-        } else {
-            selectedObjects.add(meshIndex, objects[meshIndex]);
-        }
-    }
-    else {
-        selectedObjects.clear();
-        selectedObjects.add(meshIndex, objects[meshIndex]);
-    }
-}
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
 void mouseCursorPosCallback(GLFWwindow* window, double xposIn, double yposIn) {
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
@@ -355,8 +286,131 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     }
 }
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
 void mouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
     camera.zoom(static_cast<float>(yoffset));
+}
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    // Exit application
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+    // Remove selected meshes
+    if (key == GLFW_KEY_DELETE && action == GLFW_PRESS) {
+        deleteSelectedMeshes();
+    }
+    // Camera positions
+    float distance = 15.0f;
+    if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
+        camera.position = glm::vec3(0.0f, 0.0f, distance);
+        camera.yaw = -90.0f;
+        camera.pitch = 0.0f;
+        camera.cameraZoom = 45.0f;
+        camera.updateCameraVectors();
+    }
+    if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
+        camera.position = glm::vec3(distance, 0.0f, 0.0f);
+        camera.yaw = 180.0f;
+        camera.pitch = 0.0f;
+        camera.cameraZoom = 45.0f;
+        camera.updateCameraVectors();
+    }
+    if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
+        camera.position = glm::vec3(0.0f, 0.0f, -distance);
+        camera.yaw = 90.0f;
+        camera.pitch = 0.0f;
+        camera.cameraZoom = 45.0f;
+        camera.updateCameraVectors();
+    }
+    if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
+        camera.position = glm::vec3(-distance, 0.0f, 0.0f);
+        camera.yaw = 0.0f;
+        camera.pitch = 0.0f;
+        camera.cameraZoom = 45.0f;
+        camera.updateCameraVectors();
+    }
+    if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
+        camera.position = glm::vec3(0.0f, distance, 0.0f);
+        camera.yaw = -90.0f;
+        camera.pitch = -90.0f;
+        camera.cameraZoom = 45.0f;
+        camera.updateCameraVectors();
+    }
+}
+
+// ================================================================================================
+// Internal functions
+// ================================================================================================
+
+// Möller–Trumbore intersection algorithm
+static bool rayIntersectsTriangle(const glm::vec3& origin, const glm::vec3& dir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float* intersection) {
+    const float epsilon = 0.000001f;
+
+    glm::vec3 e1 = v1 - v0;
+    glm::vec3 e2 = v2 - v0;
+
+    glm::vec3 h = glm::cross(dir, e2);
+    float a = glm::dot(e1, h);
+
+    if (a > -epsilon && a < epsilon) {
+        return false; // Ray is parallel to the triangle
+    }
+
+    float f = 1.0f / a;
+    glm::vec3 s = origin - v0;
+    float u = f * glm::dot(s, h);
+
+    if (u < 0.0f || u > 1.0f) {
+        return false; // Intersection point is outside the triangle
+    }
+
+    glm::vec3 q = glm::cross(s, e1);
+    float v = f * glm::dot(dir, q);
+
+    if (v < 0.0f || u + v > 1.0f) {
+        return false; // Intersection point is outside the triangle
+    }
+
+    float t = f * glm::dot(e2, q);
+
+    if (t > epsilon) {
+        if (intersection) {
+            *intersection = t;
+        }
+        return true; // Intersection point is valid
+    }
+
+    return false; // No intersection
+}
+
+/*
+* Processes the selection of a mesh
+*
+* If the multiple selection key is pressed it will select the mesh if it is not selected
+* or deselect it if it is already selected.
+* Otherwise, it will only mark the selected mesh.
+*/
+void markMesh(GLFWwindow* window, int meshIndex) {
+    bool multipleSelection = glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS;
+    if (multipleSelection) {
+        if (selectedObjects.contains(meshIndex)) {
+            selectedObjects.remove(meshIndex);
+        }
+        else {
+            selectedObjects.add(meshIndex, objects[meshIndex]);
+        }
+    }
+    else {
+        selectedObjects.clear();
+        selectedObjects.add(meshIndex, objects[meshIndex]);
+    }
+}
+
+// Delete all selected meshes
+void deleteSelectedMeshes() {
+    objects.erase(std::remove_if(objects.begin(), objects.end(), [&](Object3D* objPtr) {
+        int index = std::distance(objects.begin(), std::find(objects.begin(), objects.end(), objPtr));
+        return selectedObjects.contains(index);
+        }), objects.end());
+    selectedObjects.clear();
 }
