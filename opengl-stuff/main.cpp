@@ -163,9 +163,11 @@ int main() {
             ImGui::Separator();
             // Rotation
             ImGui::Text("Rotation");
-            ImGui::SliderAngle("X##rotation_x", &selectedObjects.rotation.x, -180.0f, 180.0f);
-            ImGui::SliderAngle("Y##rotation_y", &selectedObjects.rotation.y, -180.0f, 180.0f);
-            ImGui::SliderAngle("Z##rotation_z", &selectedObjects.rotation.z, -180.0f, 180.0f);
+            float minAngle = selectedObjects.size() == 1 ? -180.0f : - 1.0f;
+            float maxAngle = selectedObjects.size() == 1 ? 180.0f : 1.0f;
+            ImGui::SliderAngle("X##rotation_x", &selectedObjects.rotation.x, minAngle, maxAngle);
+            ImGui::SliderAngle("Y##rotation_y", &selectedObjects.rotation.y, minAngle, maxAngle);
+            ImGui::SliderAngle("Z##rotation_z", &selectedObjects.rotation.z, minAngle, maxAngle);
             ImGui::Separator();
             // Scale
             ImGui::Text("Scale");

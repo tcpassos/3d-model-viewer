@@ -12,30 +12,26 @@ public:
     TransformableGroup() : Transformable() { }
     
     void add(int id, Transformable* transformable) {
-        if (empty()) {
-            this->position = transformable->position;
-            this->rotation = transformable->rotation;
-            this->scale = transformable->scale;
-        }
         transformables[id] = transformable;
+        updateAttributes();
     }
 
     void remove(int id) {
         transformables.erase(id);
-        if (transformables.size() == 1) {
-            Transformable* firstElement = transformables.begin()->second;
-            this->position = firstElement->position;
-            this->rotation = firstElement->rotation;
-            this->scale = firstElement->scale;
-        }
+        updateAttributes();
     }
 
     void clear() {
         transformables.clear();
+        updateAttributes();
     }
 
     bool contains(int id) {
         return transformables.find(id) != transformables.end();
+    }
+
+    size_t size() {
+        return transformables.size();
     }
 
     bool empty() {
@@ -54,12 +50,23 @@ public:
                 transformable->rotation += this->rotation;
                 transformable->scale += glm::vec3(this->scale.x - 1.0f, this->scale.y - 1.0f, this->scale.z - 1.0f);
             }
-            this->position = glm::vec3(0.0f);
-            this->rotation = glm::vec3(0.0f);
-            this->scale = glm::vec3(1.0f);
+            updateAttributes();
         }
     }
 
 private:
     std::map<int, Transformable*> transformables;
+
+    void updateAttributes() {
+        if (transformables.size() == 1) {
+            Transformable* firstElement = transformables.begin()->second;
+            this->position = firstElement->position;
+            this->rotation = firstElement->rotation;
+            this->scale = firstElement->scale;
+        } else {
+            this->position = glm::vec3(0.0f);
+            this->rotation = glm::vec3(0.0f);
+            this->scale = glm::vec3(1.0f);
+        }
+    }
 };
