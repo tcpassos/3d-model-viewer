@@ -53,7 +53,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     // GLFW window creation
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "OpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Model Viewer", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -187,13 +187,7 @@ int main() {
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        selectedIndexes.clear();
-        selectedObject = nullptr;
-    }
-
     float speed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? 5.0f : 1.0f;
-
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.moveForward(deltaTime * speed);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -302,7 +296,7 @@ void mouseCursorPosCallback(GLFWwindow* window, double xposIn, double yposIn) {
 }
 
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-    if (button != GLFW_MOUSE_BUTTON_LEFT || action != GLFW_PRESS) {
+    if (ImGui::GetIO().WantCaptureMouse || button != GLFW_MOUSE_BUTTON_LEFT || action != GLFW_PRESS) {
         return;
     }
 
@@ -342,6 +336,9 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 
     if (closestIntersectionIndex != -1) {
         markMesh(window, closestIntersectionIndex);
+    } else {
+        selectedIndexes.clear();
+        selectedObject = nullptr;
     }
 }
 
