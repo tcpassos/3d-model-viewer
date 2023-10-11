@@ -83,6 +83,8 @@ private:
                 normal.y = mesh->mNormals[i].y;
                 normal.z = mesh->mNormals[i].z;
                 normals.push_back(normal);
+            } else {
+                normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
             }
         }
 
