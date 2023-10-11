@@ -20,7 +20,7 @@ public:
     Renderer(glm::vec2 dimensions, Camera& camera) {
         this->screenDimensions = dimensions;
         this->camera = &camera;
-        this->lightPosition = glm::vec3(1.2f, 1.0f, 2.0f);
+        this->lightPosition = glm::vec3(1.2f, 2.0f, 4.0f);
         this->shader = ResourceManager::loadShader("assets/shaders/default.vs", "assets/shaders/default.fs", nullptr, "defaultShader");
         this->wireframeTexture = ResourceManager::loadTexture(glm::vec4(0.0f, 1.0f, 1.0f, 1.0f), "wireframeTexture");
 

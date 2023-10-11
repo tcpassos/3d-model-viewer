@@ -33,7 +33,7 @@ const unsigned int SCR_WIDTH = 1366;
 const unsigned int SCR_HEIGHT = 768;
 
 // Camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 1.0f, 4.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -118,10 +118,18 @@ int main() {
         // --------------------------------------------------------------
         // Mesh selection window
         ImGui::Begin("Meshes", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
+
             // Mesh loader button
             if (ImGui::Button("Import object")) {
                 fileDialog.Open();
             }
+            fileDialog.Display();
+            if (fileDialog.HasSelected()) {
+                for (Object3D* obj : objReader.readModel(fileDialog.GetSelected().string().c_str()))
+                    objects.push_back(obj);
+                fileDialog.ClearSelected();
+            }
+
             // Mesh remove button
             ImGui::SameLine();
             if (ImGui::Button("Delete")) {
@@ -132,12 +140,6 @@ int main() {
                 selectedObjects.clear();
             }
 
-            fileDialog.Display();
-            if (fileDialog.HasSelected()) {
-                for (Object3D* obj : objReader.readModel(fileDialog.GetSelected().string().c_str()))
-                    objects.push_back(obj);
-                fileDialog.ClearSelected();
-            }
             // List of meshes in scene
             if (ImGui::BeginListBox("##meshes-list")) {
                 for (int i = 0; i < objects.size(); i++) {
