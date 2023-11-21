@@ -11,6 +11,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <fstream> 
 
 #include <shader.h>
 #include <camera.hpp>
@@ -22,6 +23,10 @@
 #include <texture.h>
 #include <text_renderer.h>
 #include <transformable_group.hpp>
+#include <rapidjson/document.h>
+
+using namespace rapidjson;
+using namespace std;
 
 void processInput(GLFWwindow* window);
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
@@ -89,7 +94,7 @@ int main() {
     // -------------------------------------------------------------------
     // File browser
     ImGui::FileBrowser fileDialog;
-    fileDialog.SetTypeFilters({ ".obj" });
+    fileDialog.SetTypeFilters({ ".obj", ".json"});
     // Object renderer
     Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
     // Object reader
@@ -143,9 +148,31 @@ int main() {
             }
             fileDialog.Display();
             if (fileDialog.HasSelected()) {
-                for (Object3D* obj : objReader.readModel(fileDialog.GetSelected().string().c_str()))
-                    objects.push_back(obj);
-                fileDialog.ClearSelected();
+                if (fileDialog.GetSelected().extension().string() == ".obj")
+                {
+                    for (Object3D* obj : objReader.readModel(fileDialog.GetSelected().string().c_str()))
+                        objects.push_back(obj);
+                    fileDialog.ClearSelected();
+                }
+                else {
+                    Document doc;
+                    ifstream file(fileDialog.GetSelected().string().c_str());
+                    string json((istreambuf_iterator<char>(file)),
+                                 istreambuf_iterator<char>());
+                    doc.Parse(json.c_str());
+                    if (doc.HasParseError()) {
+                        cerr << "Error parsing JSON: "
+                            << doc.GetParseError() << endl;
+                        return 1;
+                    }
+                    if (doc.HasMember("Object")) {
+                        doc["Object"].GetString();
+                        string filepath = fileDialog.GetSelected().parent_path().parent_path().string() + doc["Object"].GetString();
+                        for (Object3D* obj : objReader.readModel(filepath.c_str()))
+                            objects.push_back(obj);
+                    }
+                    fileDialog.ClearSelected();
+                }
             }
 
             // Object remove button

@@ -1,0 +1,23 @@
+{
+	"Object": "\\obj\\cat\\12221_Cat_v1_l3.obj",
+	"InitialPosition": [0,0,0],
+	"InitialRotation": [0,0,0],
+	"InitialScale":    [0,0,0],
+	"meshes":{
+		"mesh1":{	
+			"Animation": 
+			[{
+				"Time": 1,	
+				"Position": [0,0,0],
+				"Rotation": [0,0,0],
+				"Scale":    [0,0,0]
+			},
+			{
+				"Time": 2,	
+				"Position": [0,0,0],
+				"Rotation": [0,0,0],
+				"Scale":    [0,0,0]
+			}]
+		}
+	}
+}
