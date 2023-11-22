@@ -142,8 +142,8 @@ int main() {
         // Object selection window
         ImGui::Begin("Objects", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
 
-            // Mesh loader button
-            if (ImGui::Button("Import objects")) {
+            // Import object/scene button
+            if (ImGui::Button("Import")) {
                 fileDialog.Open();
             }
             fileDialog.Display();
@@ -153,8 +153,7 @@ int main() {
                     for (Object3D* obj : objReader.readModel(fileDialog.GetSelected().string().c_str()))
                         objects.push_back(obj);
                     fileDialog.ClearSelected();
-                }
-                else {
+                } else {
                     Document doc;
                     ifstream file(fileDialog.GetSelected().string().c_str());
                     string json((istreambuf_iterator<char>(file)),
@@ -178,8 +177,6 @@ int main() {
 
                             }
                         }
-                        
-                        
                     }
                     fileDialog.ClearSelected();
                 }
@@ -187,7 +184,7 @@ int main() {
 
             // Object remove button
             ImGui::SameLine();
-            if (ImGui::Button("Delete")) {
+            if (ImGui::Button("Delete selected")) {
                 deleteSelectedObjects();
             }
 

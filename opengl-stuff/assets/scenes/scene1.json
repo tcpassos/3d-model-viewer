@@ -6,7 +6,7 @@
 			"initialRotation": [0,0,0],
 			"initialScale":    [0,0,0],
 			"meshes":{
-				"mesh1":{	
+				"Cat":{	
 					"animation": 
 					[{
 						"time": 1,	
