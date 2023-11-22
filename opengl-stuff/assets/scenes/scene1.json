@@ -1,50 +1,36 @@
-{	
-	"scene":{
-		"objects": [{
-			"object": "\\obj\\cat\\12221_Cat_v1_l3.obj",
-			"initialPosition": [0,0,0],
-			"initialRotation": [0,0,0],
-			"initialScale":    [0,0,0],
-			"meshes":{
-				"Cat":{	
-					"animation": 
-					[{
-						"time": 1,	
-						"position": [0,0,0],
-						"rotation": [0,0,0],
-						"scale":    [0,0,0]
+{
+	"scene": {
+		"objects": [
+			{
+				"object": "\\obj\\cat\\12221_Cat_v1_l3.obj",
+				"initialPosition": [ 0, 0, 0 ],
+				"initialRotation": [ 0, 0, 0 ],
+				"initialScale": [ 0, 0, 0 ]
+			},
+			{
+				"object": "\\obj\\cat\\12221_Cat_v1_l3.obj",
+				"initialPosition": [ 0, 0, 0 ],
+				"initialRotation": [ 0, 0, 0 ],
+				"initialScale": [ 0, 0, 0 ],
+				"loopedAnimation": [
+					{
+						"time": 1,
+						"move": [ 10, 0, 0 ],
+						"curve": "linear"
 					},
 					{
-						"time": 2,	
-						"position": [0,0,0],
-						"rotation": [0,0,0],
-						"scale":    [0,0,0]
-					}]
-				}
+						"time": 2,
+						"move": [ -10, 0, 0 ],
+						"curve": "linear"
+					}
+				]
 			}
-		},
-		{
-			"object": "\\obj\\batman\\batman.obj",
-			"initialPosition": [0,0,0],
-			"initialRotation": [0,0,0],
-			"initialScale":    [0,0,0],
-			"meshes":{
-				"mesh1":{	
-					"animation": 
-					[{
-						"time": 1,	
-						"position": [0,0,0],
-						"rotation": [0,0,0],
-						"scale":    [0,0,0]
-					},
-					{
-						"time": 2,	
-						"position": [0,0,0],
-						"rotation": [0,0,0],
-						"scale":    [0,0,0]
-					}]
-				}
-			}
-		}]
+		],
+		"light": {
+			"position": [ 0, 0, 0 ],
+			"ambient": [ 0.2, 0.2, 0.2 ],
+			"difuse": [ 0.8, 0.8, 0.8 ],
+			"specular": [ 0.5, 0.5, 0.5 ]
+		}
 	}
 }
