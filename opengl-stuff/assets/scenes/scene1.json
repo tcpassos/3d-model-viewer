@@ -1,23 +1,50 @@
-{
-	"Object": "\\obj\\cat\\12221_Cat_v1_l3.obj",
-	"InitialPosition": [0,0,0],
-	"InitialRotation": [0,0,0],
-	"InitialScale":    [0,0,0],
-	"meshes":{
-		"mesh1":{	
-			"Animation": 
-			[{
-				"Time": 1,	
-				"Position": [0,0,0],
-				"Rotation": [0,0,0],
-				"Scale":    [0,0,0]
-			},
-			{
-				"Time": 2,	
-				"Position": [0,0,0],
-				"Rotation": [0,0,0],
-				"Scale":    [0,0,0]
-			}]
-		}
+{	
+	"scene":{
+		"objects": [{
+			"object": "\\obj\\cat\\12221_Cat_v1_l3.obj",
+			"initialPosition": [0,0,0],
+			"initialRotation": [0,0,0],
+			"initialScale":    [0,0,0],
+			"meshes":{
+				"mesh1":{	
+					"animation": 
+					[{
+						"time": 1,	
+						"position": [0,0,0],
+						"rotation": [0,0,0],
+						"scale":    [0,0,0]
+					},
+					{
+						"time": 2,	
+						"position": [0,0,0],
+						"rotation": [0,0,0],
+						"scale":    [0,0,0]
+					}]
+				}
+			}
+		},
+		{
+			"object": "\\obj\\batman\\batman.obj",
+			"initialPosition": [0,0,0],
+			"initialRotation": [0,0,0],
+			"initialScale":    [0,0,0],
+			"meshes":{
+				"mesh1":{	
+					"animation": 
+					[{
+						"time": 1,	
+						"position": [0,0,0],
+						"rotation": [0,0,0],
+						"scale":    [0,0,0]
+					},
+					{
+						"time": 2,	
+						"position": [0,0,0],
+						"rotation": [0,0,0],
+						"scale":    [0,0,0]
+					}]
+				}
+			}
+		}]
 	}
 }

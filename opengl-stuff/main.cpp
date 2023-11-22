@@ -165,11 +165,21 @@ int main() {
                             << doc.GetParseError() << endl;
                         return 1;
                     }
-                    if (doc.HasMember("Object")) {
-                        doc["Object"].GetString();
-                        string filepath = fileDialog.GetSelected().parent_path().parent_path().string() + doc["Object"].GetString();
-                        for (Object3D* obj : objReader.readModel(filepath.c_str()))
-                            objects.push_back(obj);
+                    if (doc.HasMember("scene") ) {
+                        const Value& scene = doc["scene"];
+
+                        if (scene.HasMember("objects"))
+                        {
+                            const Value& objs = scene["objects"];
+                            for (auto& o : objs.GetArray()) {
+                                string filepath = fileDialog.GetSelected().parent_path().parent_path().string() + o["object"].GetString();
+                                for (Object3D* obj : objReader.readModel(filepath.c_str()))
+                                    objects.push_back(obj);
+
+                            }
+                        }
+                        
+                        
                     }
                     fileDialog.ClearSelected();
                 }
