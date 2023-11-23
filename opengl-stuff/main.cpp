@@ -16,6 +16,7 @@
 #include <shader.h>
 #include <camera.hpp>
 #include <font.h>
+#include <light.hpp>
 #include <mesh.hpp>
 #include <object_reader.hpp>
 #include <renderer.hpp>
@@ -42,11 +43,15 @@ void deleteSelectedObjects();
 const unsigned int SCR_WIDTH = 1366;
 const unsigned int SCR_HEIGHT = 768;
 
-// Camera
-Camera camera(glm::vec3(0.0f, 1.0f, 4.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
+
+// Camera
+Camera camera(glm::vec3(0.0f, 1.0f, 4.0f));
+
+// Light
+Light light;
 
 // Timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -96,7 +101,7 @@ int main() {
     ImGui::FileBrowser fileDialog;
     fileDialog.SetTypeFilters({ ".obj", ".json"});
     // Object renderer
-    Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
+    Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera, light);
     // Object reader
     ObjectReader objReader;
     // Text renderer
@@ -226,6 +231,20 @@ int main() {
             // Update selected objects attributes
             selectedObjects.update();
         }
+
+        // --------------------------------------------------------------
+        // Lightning window
+        ImGui::Begin("Lightning", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Text("Position");
+        ImGui::DragScalar("X##light_position_x", ImGuiDataType_Float, &light.position.x, 0.01f);
+        ImGui::DragScalar("Y##light_position_y", ImGuiDataType_Float, &light.position.y, 0.01f);
+        ImGui::DragScalar("Z##light_position_z", ImGuiDataType_Float, &light.position.z, 0.01f);
+        ImGui::Text("Color");
+        ImGui::ColorEdit3("##light_color", (float*)&light.color);
+        ImGui::Text("Phong");
+        ImGui::DragScalar("Ambient##ambient_strength", ImGuiDataType_Float, &light.ambientStrength, 0.01f);
+        ImGui::DragScalar("Specular##specular_strength", ImGuiDataType_Float, &light.specularStrength, 0.01f);
+        ImGui::End();
 
         // --------------------------------------------------------------
         // Render windows

@@ -5,12 +5,12 @@ in vec2 TexCoord;
 in vec3 Normal;
 in vec3 FragPos;
 
-vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
-float ambientStrength = 0.3;
-float specularStrength = 0.5;
+uniform vec3 lightPos;
+uniform vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
+uniform float ambientStrength = 0.3;
+uniform float specularStrength = 0.5;
 
 uniform sampler2D texBuff;
-uniform vec3 lightPos;
 uniform vec3 viewPos;
 
 void main() {
