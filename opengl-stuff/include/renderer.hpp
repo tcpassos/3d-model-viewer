@@ -45,6 +45,7 @@ public:
         shader.setVector3f("lightPos", light->position);
         shader.setVector3f("lightColor", light->color);
         shader.setFloat("ambientStrength", light->ambientStrength);
+        shader.setFloat("diffuseStrength", light->diffuseStrength);
         shader.setFloat("specularStrength", light->specularStrength);
         shader.setVector3f("viewPos", camera->position);
         // Bind mesh attribute array

@@ -243,6 +243,7 @@ int main() {
         ImGui::ColorEdit3("##light_color", (float*)&light.color);
         ImGui::Text("Phong");
         ImGui::DragScalar("Ambient##ambient_strength", ImGuiDataType_Float, &light.ambientStrength, 0.01f);
+        ImGui::DragScalar("Diffuse##diffuse_strength", ImGuiDataType_Float, &light.diffuseStrength, 0.01f);
         ImGui::DragScalar("Specular##specular_strength", ImGuiDataType_Float, &light.specularStrength, 0.01f);
         ImGui::End();
 
