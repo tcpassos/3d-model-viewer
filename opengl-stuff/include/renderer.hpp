@@ -18,11 +18,13 @@ typedef int RenderModes;
 
 class Renderer {
 public:
-    Light light;
+    Camera* camera;
+    Light* light;
 
-    Renderer(glm::vec2 dimensions, Camera& camera) {
+    Renderer(glm::vec2 dimensions, Camera& camera, Light& light) {
         this->screenDimensions = dimensions;
         this->camera = &camera;
+        this->light = &light;
         this->shader = ResourceManager::loadShader("assets/shaders/default.vs", "assets/shaders/default.fs", nullptr, "defaultShader");
         this->wireframeTexture = ResourceManager::loadTexture(glm::vec4(0.0f, 1.0f, 1.0f, 1.0f), "wireframeTexture");
         this->defaultTexture = ResourceManager::loadTexture(glm::vec4(0.7f, 0.7f, 0.7f, 1.0f), "defaultTexture");
@@ -40,12 +42,12 @@ public:
         shader.setMatrix4("projection", projection);
         shader.setMatrix4("view", camera->getViewMatrix());
         shader.setMatrix4("model", object.getModelMatrix());
+        shader.setVector3f("lightPos", light->position);
+        shader.setVector3f("lightColor", light->color);
+        shader.setFloat("ambientStrength", light->ambientStrength);
+        shader.setFloat("diffuseStrength", light->diffuseStrength);
+        shader.setFloat("specularStrength", light->specularStrength);
         shader.setVector3f("viewPos", camera->position);
-
-        shader.setVector3f("light.position", light.position);
-        shader.setVector3f("light.ambient", light.getAmbientColor());
-        shader.setVector3f("light.diffuse", light.getDiffuseColor());
-        shader.setVector3f("light.specular", light.getSpecularColor());
 
         Material material = object.mesh.getMaterial();
         shader.setVector3f("material.ambient", material.ambientColor);
@@ -79,7 +81,6 @@ public:
 
 private:
     Shader shader;
-    Camera* camera;
     Texture2D wireframeTexture;
     Texture2D defaultTexture;
     glm::vec2 screenDimensions;

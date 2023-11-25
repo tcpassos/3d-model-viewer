@@ -11,10 +11,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <fstream> 
 
 #include <shader.h>
 #include <camera.hpp>
 #include <font.h>
+#include <light.hpp>
 #include <mesh.hpp>
 #include <object_reader.hpp>
 #include <renderer.hpp>
@@ -22,6 +24,10 @@
 #include <texture.h>
 #include <text_renderer.h>
 #include <transformable_group.hpp>
+#include <rapidjson/document.h>
+
+using namespace rapidjson;
+using namespace std;
 
 void processInput(GLFWwindow* window);
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
@@ -37,11 +43,15 @@ void deleteSelectedObjects();
 const unsigned int SCR_WIDTH = 1366;
 const unsigned int SCR_HEIGHT = 768;
 
-// Camera
-Camera camera(glm::vec3(0.0f, 1.0f, 4.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
+
+// Camera
+Camera camera(glm::vec3(0.0f, 1.0f, 4.0f));
+
+// Light
+Light light;
 
 // Timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -89,9 +99,9 @@ int main() {
     // -------------------------------------------------------------------
     // File browser
     ImGui::FileBrowser fileDialog;
-    fileDialog.SetTypeFilters({ ".obj" });
+    fileDialog.SetTypeFilters({ ".obj", ".json"});
     // Object renderer
-    Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera);
+    Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera, light);
     // Object reader
     ObjectReader objReader;
     // Text renderer
@@ -137,20 +147,49 @@ int main() {
         // Object selection window
         ImGui::Begin("Objects", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
 
-            // Mesh loader button
-            if (ImGui::Button("Import objects")) {
+            // Import object/scene button
+            if (ImGui::Button("Import")) {
                 fileDialog.Open();
             }
             fileDialog.Display();
             if (fileDialog.HasSelected()) {
-                for (Object3D* obj : objReader.readModel(fileDialog.GetSelected().string().c_str()))
-                    objects.push_back(obj);
-                fileDialog.ClearSelected();
+                if (fileDialog.GetSelected().extension().string() == ".obj")
+                {
+                    for (Object3D* obj : objReader.readModel(fileDialog.GetSelected().string().c_str()))
+                        objects.push_back(obj);
+                    fileDialog.ClearSelected();
+                } else {
+                    Document doc;
+                    ifstream file(fileDialog.GetSelected().string().c_str());
+                    string json((istreambuf_iterator<char>(file)),
+                                 istreambuf_iterator<char>());
+                    doc.Parse(json.c_str());
+                    if (doc.HasParseError()) {
+                        cerr << "Error parsing JSON: "
+                            << doc.GetParseError() << endl;
+                        return 1;
+                    }
+                    if (doc.HasMember("scene") ) {
+                        const Value& scene = doc["scene"];
+
+                        if (scene.HasMember("objects"))
+                        {
+                            const Value& objs = scene["objects"];
+                            for (auto& o : objs.GetArray()) {
+                                string filepath = fileDialog.GetSelected().parent_path().parent_path().string() + o["object"].GetString();
+                                for (Object3D* obj : objReader.readModel(filepath.c_str()))
+                                    objects.push_back(obj);
+
+                            }
+                        }
+                    }
+                    fileDialog.ClearSelected();
+                }
             }
 
             // Object remove button
             ImGui::SameLine();
-            if (ImGui::Button("Delete")) {
+            if (ImGui::Button("Delete selected")) {
                 deleteSelectedObjects();
             }
 
@@ -192,6 +231,21 @@ int main() {
             // Update selected objects attributes
             selectedObjects.update();
         }
+
+        // --------------------------------------------------------------
+        // Lightning window
+        ImGui::Begin("Lightning", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Text("Position");
+        ImGui::DragScalar("X##light_position_x", ImGuiDataType_Float, &light.position.x, 0.01f);
+        ImGui::DragScalar("Y##light_position_y", ImGuiDataType_Float, &light.position.y, 0.01f);
+        ImGui::DragScalar("Z##light_position_z", ImGuiDataType_Float, &light.position.z, 0.01f);
+        ImGui::Text("Color");
+        ImGui::ColorEdit3("##light_color", (float*)&light.color);
+        ImGui::Text("Phong");
+        ImGui::DragScalar("Ambient##ambient_strength", ImGuiDataType_Float, &light.ambientStrength, 0.01f);
+        ImGui::DragScalar("Diffuse##diffuse_strength", ImGuiDataType_Float, &light.diffuseStrength, 0.01f);
+        ImGui::DragScalar("Specular##specular_strength", ImGuiDataType_Float, &light.specularStrength, 0.01f);
+        ImGui::End();
 
         // --------------------------------------------------------------
         // Render windows
@@ -283,6 +337,8 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
         std::vector<GLuint> indices = mesh.getIndices();
 
         for (uint32_t i = 0; i < indices.size(); i += 3) {
+            if (i + 3 >= indices.size())
+                break;
             float intersectionPos;
             if (rayIntersectsTriangle(worldNear, rayDir, verticesData[indices[i]], verticesData[indices[i + 1]], verticesData[indices[i + 2]], &intersectionPos)) {
                 if (intersectionPos < closestIntersection) {
