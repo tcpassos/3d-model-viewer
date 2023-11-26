@@ -1,13 +1,11 @@
 #include "texture.h"
 
 Texture2D::Texture2D()
-    : width(0), height(0), internalFormat(GL_RGB), imageFormat(GL_RGB), wrapS(GL_REPEAT), wrapT(GL_REPEAT), filterMin(GL_LINEAR), filterMax(GL_LINEAR)
-{
-    glGenTextures(1, &this->id);
-}
+    : id(0), width(0), height(0), internalFormat(GL_RGB), imageFormat(GL_RGB), wrapS(GL_REPEAT), wrapT(GL_REPEAT), filterMin(GL_LINEAR), filterMax(GL_LINEAR) { }
 
 void Texture2D::generate(unsigned int width, unsigned int height, unsigned char* data)
 {
+    glGenTextures(1, &this->id);
     this->width = width;
     this->height = height;
     // Create texture
