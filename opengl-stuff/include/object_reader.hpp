@@ -141,7 +141,7 @@ private:
         if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_SPECULAR, specularColor))
             mat.specularColor = glm::vec3(specularColor.r, specularColor.g, specularColor.b);
         if (AI_SUCCESS == material->Get(AI_MATKEY_SHININESS, shininess))
-            mat.shininess = shininess;
+            mat.shininess = shininess == 0.0f ? 1.0f : shininess;
         if (AI_SUCCESS == material->Get(AI_MATKEY_OPACITY, opacity))
             mat.opacity = opacity;
 

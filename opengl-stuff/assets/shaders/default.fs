@@ -20,12 +20,6 @@ struct Material {
     float opacity;
 };
 
-uniform vec3 lightPos;
-uniform vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
-uniform float ambientStrength = 0.3;
-uniform float specularStrength = 0.5;
-uniform float diffuseStrength = 1.0;
-
 uniform sampler2D texBuff;
 uniform vec3 viewPos;
 uniform Light light;
@@ -48,5 +42,6 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * (spec * material.specular);
 
-	FragColor = vec4((ambient + diffuse + specular), 1.0) * texture(texBuff, TexCoord) * material.opacity;
+	FragColor = vec4((ambient + diffuse + specular), 1.0) * texture(texBuff, TexCoord);
+    FragColor.a *= material.opacity;
 }

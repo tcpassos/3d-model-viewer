@@ -38,6 +38,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 static bool rayIntersectsTriangle(const glm::vec3& origin, const glm::vec3& dir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float* intersection);
 void markMesh(GLFWwindow* window, int meshIndex);
 void deleteSelectedObjects();
+Object3D* getSelectedObject();
 
 // Settings
 const unsigned int SCR_WIDTH = 1366;
@@ -246,6 +247,19 @@ int main() {
         ImGui::DragScalar("Diffuse##diffuse_strength", ImGuiDataType_Float, &light.diffuseStrength, 0.01f);
         ImGui::DragScalar("Specular##specular_strength", ImGuiDataType_Float, &light.specularStrength, 0.01f);
         ImGui::End();
+
+        // --------------------------------------------------------------
+        // Material window
+        if (selectedObjects.size() == 1) {
+            Material* material = &getSelectedObject()->mesh.getMaterial();
+            ImGui::Begin("Material", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::ColorEdit3("Ambient##material_ambient", (float*)&material->ambientColor);
+            ImGui::ColorEdit3("Diffuse##material_diffuse", (float*)&material->diffuseColor);
+            ImGui::ColorEdit3("Specular##material_specular", (float*)&material->specularColor);
+            ImGui::DragScalar("Shininess##material_shininess", ImGuiDataType_Float, &material->shininess, 0.01f);
+            ImGui::DragScalar("Opacity##material_opacity", ImGuiDataType_Float, &material->opacity, 0.01f);
+            ImGui::End();
+        }
 
         // --------------------------------------------------------------
         // Render windows
@@ -483,4 +497,13 @@ void deleteSelectedObjects() {
         return selectedObjects.contains(index);
         }), objects.end());
     selectedObjects.clear();
+}
+
+// Get the first selected object
+Object3D* getSelectedObject() {
+    for (int x = 0; x < objects.size(); x++) {
+		if (selectedObjects.contains(x)) {
+			return objects[x];
+		}
+	}
 }

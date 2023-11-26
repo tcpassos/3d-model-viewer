@@ -42,11 +42,10 @@ public:
         shader.setMatrix4("projection", projection);
         shader.setMatrix4("view", camera->getViewMatrix());
         shader.setMatrix4("model", object.getModelMatrix());
-        shader.setVector3f("lightPos", light->position);
-        shader.setVector3f("lightColor", light->color);
-        shader.setFloat("ambientStrength", light->ambientStrength);
-        shader.setFloat("diffuseStrength", light->diffuseStrength);
-        shader.setFloat("specularStrength", light->specularStrength);
+        shader.setVector3f("light.position", light->position);
+        shader.setVector3f("light.ambient", light->color * light->ambientStrength);
+        shader.setVector3f("light.diffuse", light->color * light->diffuseStrength);
+        shader.setVector3f("light.specular", light->color * light->specularStrength);
         shader.setVector3f("viewPos", camera->position);
 
         Material material = object.mesh.getMaterial();
