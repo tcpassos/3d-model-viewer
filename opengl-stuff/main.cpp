@@ -25,7 +25,7 @@
 #include <text_renderer.h>
 #include <transformable_group.hpp>
 #include <rapidjson/document.h>
-#include <bezier.hpp>
+#include <animation.hpp>
 
 using namespace rapidjson;
 using namespace std;
@@ -66,7 +66,7 @@ int frameCounter = 0;
 std::vector<Object3D*> objects;
 TransformableGroup selectedObjects;
 
-std::vector<TransformableGroup> objectGroups;
+std::vector<Animation> animations;
 
 int main() {
     // GLFW: initialize and configure
@@ -150,32 +150,10 @@ int main() {
             renderer.render(*objects[x], renderModes);
         }
 
-        if (objectGroups.size() > 0) {
-            constexpr int segmentCount = 120;
-            const glm::vec3 p1 = glm::vec3(15.0f, 15.0f, 15.0f);
-            const glm::vec3 p2 = glm::vec3(10.0f, 10.0f, 10.0f);
-            const glm::vec3 p3 = glm::vec3(-10.0f, -10.0f, -10.0f);
-            const glm::vec3 p4 = glm::vec3(-15.0f, -15.0f, -15.0f);
-
-            if (currentFrame - animationLastFrame > 1.0f / 60.0f)
-            {
-                frameCounter++;
-                animationLastFrame = currentFrame;
-                for (TransformableGroup& group : objectGroups) {
-                    if (frameCounter%(segmentCount*2) < segmentCount){
-                        const auto t = bezierpp::invLerp<float>(0.f, float(segmentCount - 1), float(frameCounter % segmentCount));
-                        const auto p = bezierpp::cubicBezierCurve(p1, p2, p3, p4, t);
-                        group.position = p;
-                        group.update();
-                    }
-                    else {
-                        const auto t = bezierpp::invLerp<float>(0.f, float(segmentCount - 1), float(segmentCount - (frameCounter%segmentCount)));
-                        const auto p = bezierpp::cubicBezierCurve(p1, p2, p3, p4, t);  
-                        group.position = p;
-                        group.update();
-                    }
-                }
-            }
+        if (animations.size() > 0) {
+            for (int x = 0; x < animations.size(); x++) {
+				animations[x].animate(currentFrame);
+			}
 		}
 
         // --------------------------------------------------------------
@@ -209,6 +187,7 @@ int main() {
 
                         if (scene.HasMember("objects"))
                         {
+                            
                             const Value& objs = scene["objects"];
                             for (auto& o : objs.GetArray()) {
                                 string filepath = fileDialog.GetSelected().parent_path().parent_path().string() + o["object"].GetString();
@@ -219,7 +198,42 @@ int main() {
                                     group.add(objects.size() - 1, objects[objects.size() - 1]);
                                 }
 
-                                objectGroups.push_back(group);
+                                if (o.HasMember("loopedAnimation")) {
+									const Value& loopedAnimation = o["loopedAnimation"];
+
+                                    std::vector<float> timePoints;
+                                    std::vector<glm::vec3> positions;
+
+                                    for (auto& a : loopedAnimation.GetArray()) {
+                                        timePoints.push_back(a["time"].GetFloat());
+                                        float x = a["position"][0].GetFloat();
+                                        float y = a["position"][1].GetFloat();
+                                        float z = a["position"][2].GetFloat();
+                                        
+                                        positions.push_back(glm::vec3(x,y,z));
+									}
+
+                                    Animation animation(group, timePoints, positions, true);
+									animations.push_back(animation);
+                                }
+                                else if (o.HasMember("simpleAnimation"))
+                                {
+                                    const Value& simpleAnimation = o["simpleAnimation"];
+
+                                    std::vector<float> timePoints;
+                                    std::vector<glm::vec3> positions;
+
+                                    for (auto& a : simpleAnimation.GetArray()) {
+                                        timePoints.push_back(a["time"].GetFloat());
+                                        positions.push_back(glm::vec3(a["position"][0].GetFloat(), a["position"][1].GetFloat(), a["position"][2].GetFloat()));
+                                    }
+
+                                    Animation animation(group, timePoints, positions);
+                                    animations.push_back(animation);
+                                }
+                                else
+                                    continue;
+
                             }
                         }
                     }
