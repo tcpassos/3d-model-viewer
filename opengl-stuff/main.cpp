@@ -206,11 +206,7 @@ int main() {
 
                                     for (auto& a : loopedAnimation.GetArray()) {
                                         timePoints.push_back(a["time"].GetFloat());
-                                        float x = a["position"][0].GetFloat();
-                                        float y = a["position"][1].GetFloat();
-                                        float z = a["position"][2].GetFloat();
-                                        
-                                        positions.push_back(glm::vec3(x,y,z));
+                                        positions.push_back(glm::vec3(a["position"][0].GetFloat(), a["position"][1].GetFloat(), a["position"][2].GetFloat()));
 									}
 
                                     Animation animation(group, timePoints, positions, true);
