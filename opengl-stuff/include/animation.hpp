@@ -67,7 +67,7 @@ void animateLooped(){
 		}
 	}
 
-	for (int y = 0; y < tamPositions; y += 4)
+	for (int y = 0; y < tamPositions; y += 3)
 	{
 		if(x >= y && x < y+4)
 		{
@@ -128,7 +128,7 @@ void animateSimple(){
 		}
 	}
 
-	for (int y = 0; y < tamPositions; y += 4)
+	for (int y = 0; y < tamPositions; y += 3)
 	{
 		if (x >= y && x < y + 4)
 		{
