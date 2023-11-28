@@ -70,6 +70,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PublicIncludeDirectories>include;$(PublicIncludeDirectories)</PublicIncludeDirectories>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -152,6 +155,7 @@
     <ClCompile Include="src\text_renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\bezier.hpp" />
     <ClInclude Include="include\camera.hpp" />
     <ClInclude Include="include\effects.h" />
     <ClInclude Include="include\effects\effect.h" />
