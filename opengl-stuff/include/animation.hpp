@@ -78,11 +78,11 @@ private:
 		return positions[i] * (1 - local_t) + positions[i + 1] * local_t;
 	}
 
-	glm::vec3 bezier_curve(double t) {
+	glm::vec3 bezier_curve(float t) {
 		glm::vec3 result = {0, 0, 0};
 		int n = positions.size() - 1;
 		for(int i = 0; i <= n; i++) {
-			double b = binomial_coefficient(n, i) * std::pow(t, i) * std::pow(1 - t, n - i);
+			float b = binomial_coefficient(n, i) * std::pow(t, i) * std::pow(1 - t, n - i);
 			result.x += positions[i].x * b;
 			result.y += positions[i].y * b;
 			result.z += positions[i].z * b;

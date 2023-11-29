@@ -1,0 +1,43 @@
+{
+	"scene": {
+		"objects": [
+			{
+				"path": "assets\\obj\\rock\\untitled.obj"
+			},
+			{
+				"path": "assets\\obj\\duck\\12248_Bird_v1_L2.obj",
+				"initialPosition": [ 0.3, 0.4, 0.0 ],
+				"initialRotation": [ -90.0, 0.0, 0.0 ],
+				"initialScale": [ 0.02, 0.02, 0.02 ]
+			},
+			{
+				"path": "assets\\obj\\dog\\french_bulldog.obj",
+				"initialPosition": [ -0.790, 0.360, 0.620 ],
+				"initialRotation": [ 0.0, 40.0, 0.0 ],
+				"initialScale": [ 0.15, 0.12, 0.14 ]
+			},
+			{
+				"path": "assets\\obj\\NaveET\\NaveET.obj",
+				"initialScale": [ 0.4, 0.4, 0.4 ],
+				"animation": {
+					"positions": [
+						[ 2, 3, 0 ],
+						[ 2, 2, 0 ],
+						[ 0, 2, 1 ],
+						[ 0, 4, 1 ],
+						[ 2, 4, 0 ],
+						[ 2, 3, 0 ]
+					],
+					"duration": 2,
+					"type": "bezier"
+				}
+			}
+		],
+		"light": {
+			"color": [ 1, 0.8, 0.6 ],
+			"ambientStrength": 0.6,
+			"difuseStrength": 1.0,
+			"specularStrength": 2.0
+		}
+	}
+}
