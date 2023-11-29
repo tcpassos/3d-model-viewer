@@ -35,10 +35,8 @@ public:
     }
 
     void render(Object3D& object, RenderModes renderModes = RenderModes_Normal) {
-        // Enable depth testing
-        glEnable(GL_DEPTH_TEST);
         // Calculate projection
-        glm::mat4 projection = glm::perspective(glm::radians(camera->cameraZoom), (float)screenDimensions.x / (float)screenDimensions.y, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera->cameraZoom), (float)screenDimensions.x / (float)screenDimensions.y, 0.1f, 200.0f);
         // Setup shader
         shader.use();
         shader.setMatrix4("projection", projection);
@@ -68,14 +66,8 @@ public:
             } else {
                 defaultTexture.bind();
             }
-            // If the object is transparent, enable blending
-            if (object.mesh.getMaterial().opacity < 1.0f) {
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            }
-            else {
-                glDisable(GL_BLEND);
-            }
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDrawElements(GL_TRIANGLES, object.mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
         }
         // Wireframe render
@@ -87,8 +79,6 @@ public:
         }
         // Unbind
         glBindVertexArray(0);
-        // Disable depth testing
-        glDisable(GL_DEPTH_TEST);
     }
 
 private:

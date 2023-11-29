@@ -113,7 +113,7 @@ private:
         for (unsigned int i = 0; i < AI_TEXTURE_TYPE_MAX; ++i) {
 
             // Consider only common texture types
-            if (i == aiTextureType_NONE || i == aiTextureType_UNKNOWN || i == aiTextureType_LIGHTMAP || i == aiTextureType_HEIGHT) {
+            if (!(i == aiTextureType_BASE_COLOR || i == aiTextureType_AMBIENT || i == aiTextureType_DIFFUSE)) {
 				continue;
 			}
 
