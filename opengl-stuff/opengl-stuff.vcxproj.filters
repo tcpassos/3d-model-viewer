@@ -176,9 +176,6 @@
     <ClInclude Include="include\material.hpp">
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>
-    <ClInclude Include="include\bezier.hpp">
-      <Filter>Arquivos de Cabeçalho</Filter>
-    </ClInclude>
     <ClInclude Include="include\animation.hpp">
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>

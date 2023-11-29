@@ -156,7 +156,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\animation.hpp" />
-    <ClInclude Include="include\bezier.hpp" />
     <ClInclude Include="include\camera.hpp" />
     <ClInclude Include="include\effects.h" />
     <ClInclude Include="include\effects\effect.h" />

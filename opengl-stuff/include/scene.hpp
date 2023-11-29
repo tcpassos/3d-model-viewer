@@ -114,6 +114,7 @@ private:
 	void parseAnimation(const rapidjson::Value& animationJson, TransformableGroup objGroup) {
 		std::vector<glm::vec3> positions;
 		float duration = 1.0f;
+		AnimationType type = AnimationType_Linear;
 		// Parse positions
 		if (animationJson.HasMember("positions")) {
 			const rapidjson::Value& positionsJson = animationJson["positions"];
@@ -125,7 +126,16 @@ private:
 		if (animationJson.HasMember("duration")) {
 			duration = animationJson["duration"].GetFloat();
 		}
-		Animation animation(objGroup, positions, duration);
+		// Parse type
+		if (animationJson.HasMember("type")) {
+			const rapidjson::Value& animationType = animationJson["type"];
+			if (animationType == "linear") {
+				type = AnimationType_Linear;
+			} else if (animationType == "bezier") {
+				type = AnimationType_Bezier;
+			}
+		}
+		Animation animation(objGroup, positions, duration, type);
 		animations.push_back(animation);
 	}
 	
