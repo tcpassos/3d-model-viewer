@@ -77,6 +77,7 @@ private:
 			}
 			// Parse object
 			std::string objectFilePath = o["path"].GetString();
+			TransformableGroup objGroup;
 			for (Object3D* obj : objReader.readModel(objectFilePath.c_str())) {
 				if (o.HasMember("initialPosition")) {
 					const rapidjson::Value& initialPositionJson = o["initialPosition"];
@@ -94,14 +95,12 @@ private:
 					obj->scale = glm::vec3(initialScaleJson[0].GetFloat(), initialScaleJson[1].GetFloat(), initialScaleJson[2].GetFloat());
 				}
 				objects.push_back(obj);
+				objGroup.add(objects.size() - 1, objects[objects.size() - 1]);
 			}
-			// Parse animations
-			if (o.HasMember("loopedAnimation")) {
-				const rapidjson::Value& loopedAnimation = o["loopedAnimation"];
-				parseAnimation(loopedAnimation, true);
-			} else if (o.HasMember("animation")) {
-				const rapidjson::Value& simpleAnimation = o["animation"];
-				parseAnimation(simpleAnimation, false);
+			// Parse animation
+			if (o.HasMember("animation")) {
+				const rapidjson::Value& animationJson = o["animation"];
+				parseAnimation(animationJson, objGroup);
 			}
 		}
 	}
@@ -111,22 +110,22 @@ private:
 	 *
 	 * @param animationJson The JSON object containing the animation.
 	 * @param scene The scene to add the animation to.
-	 * @param isLooped Whether the animation should be looped.
 	 */
-	void parseAnimation(const rapidjson::Value& animationJson, bool isLooped) {
-		std::vector<float> timePoints;
+	void parseAnimation(const rapidjson::Value& animationJson, TransformableGroup objGroup) {
 		std::vector<glm::vec3> positions;
-		TransformableGroup objGroup;
-
-		for (int i = 0; i < objects.size(); i++)
-			objGroup.add(i, objects[i]);
-
-		for (auto& a : animationJson.GetArray()) {
-			timePoints.push_back(a["time"].GetFloat());
-			positions.push_back(glm::vec3(a["position"][0].GetFloat(), a["position"][1].GetFloat(), a["position"][2].GetFloat()));
+		float duration = 1.0f;
+		// Parse positions
+		if (animationJson.HasMember("positions")) {
+			const rapidjson::Value& positionsJson = animationJson["positions"];
+			for (auto& p : positionsJson.GetArray()) {
+				positions.push_back(glm::vec3(p[0].GetFloat(), p[1].GetFloat(), p[2].GetFloat()));
+			}
 		}
-
-		Animation animation(objGroup, timePoints, positions, isLooped);
+		// Parse duration
+		if (animationJson.HasMember("duration")) {
+			duration = animationJson["duration"].GetFloat();
+		}
+		Animation animation(objGroup, positions, duration);
 		animations.push_back(animation);
 	}
 	

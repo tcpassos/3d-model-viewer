@@ -8,153 +8,68 @@
 #include <iostream>
 #include <map>
 
+#define FRAMES_PER_SECOND 60
+
 class Animation {
-private:
-	TransformableGroup meshGroup;
-	std::vector<float> timePoints;
-	std::vector<glm::vec3> positions;
-
-	bool isLoopAnimation = false;
-
-	int frameCounter;
-	int segmentCount;
-	float lastframe;
 
 public:
-	Animation(TransformableGroup &meshGroup, std::vector<float> timePoints, std::vector<glm::vec3> positions, bool isLoopAnimation = false) {
-		this->timePoints = timePoints;
-		this->positions = positions;
+	float duration;
+	std::vector<glm::vec3> positions;
+
+	Animation(TransformableGroup &meshGroup, std::vector<glm::vec3> positions, float duration) {
 		this->meshGroup = meshGroup;
-		this->isLoopAnimation = isLoopAnimation;
-
-		this->segmentCount = int(timePoints[timePoints.size() - 1]*60);
-
-		frameCounter = 0;
-		lastframe = 0;
+		this->positions = positions;
+		this->duration = duration;
+		this->frameCounter = 0;
+		this->lastTime = 0;
 	}
 
-void animate(float frame) {
-	if ((frame - lastframe) > (1.0f / 60.0f))
-	{
-		lastframe = frame;
-		
-		if (isLoopAnimation)
-			animateLooped();
-		else
-			animateSimple();
-		
-		frameCounter++;
+void animate(float currentTime) {
+    // Limit the number of frames per second
+    if ((currentTime - lastTime) < (1.0f / FRAMES_PER_SECOND)) {
+        return;
+    }
+    // Update the last time
+    lastTime = currentTime;
+    // Reset the frame counter if the animation is over
+    if (frameCounter >= (duration * FRAMES_PER_SECOND))
+        frameCounter = 0;
+    // Calculate the t parameter of the bezier curve
+	float frameRateDuration = (1.0f / FRAMES_PER_SECOND) / duration;
+    float t = frameCounter * frameRateDuration;
+    meshGroup.position = bezier_curve(t);
 
-		update();
-	}
+    frameCounter++;
+    meshGroup.update();
 }
 
-void animateLooped(){
+private:
+	TransformableGroup meshGroup;
+	int frameCounter;
+	float lastTime;
 
-	if (frameCounter >= (segmentCount * 2))
-		frameCounter = 0;
-
-	int tamPositions = positions.size();
-	float currentTime = frameCounter * (1.0f / 60.0f);
-	
-	int x = 0;
-	float t = 0.f;
-
-	for(x = 0; x < timePoints.size() - 1; x++){
-		if(currentTime >= timePoints[x] && currentTime < timePoints[x+1]){
-			break;
+	double factorial(int n) {
+		double fact = 1;
+		for(int i = 1; i <= n; i++) {
+			fact *= i;
 		}
+		return fact;
 	}
 
-	for (int y = 0; y < tamPositions; y += 3)
-	{
-		if(x >= y && x < y+4)
-		{
-			if (frameCounter < (timePoints[y] * 60))
-				continue;
-			if (frameCounter > (segmentCount*2) - (timePoints[y] * 60))
-				continue;
-
-			if (tamPositions - y >= 4) {
-
-				if (frameCounter < segmentCount) {
-					t = bezierpp::invLerp<float>(float(timePoints[y] * 60), float(timePoints[y + 3] * 60), float(frameCounter % segmentCount));
-				}
-				else {
-					t = bezierpp::invLerp<float>(float(timePoints[y] * 60), float(timePoints[y + 3] * 60), float(segmentCount - (frameCounter % segmentCount)));
-				}
-				meshGroup.position = bezierpp::cubicBezierCurve(positions[y], positions[y + 1], positions[y + 2], positions[y + 3], t);
-			}
-			else if (tamPositions - y == 3) {
-				if (frameCounter < segmentCount) {
-					t = bezierpp::invLerp<float>(float(timePoints[y] * 60), float(timePoints[y + 2] * 60), float(frameCounter % segmentCount));
-				}
-				else {
-					t = bezierpp::invLerp<float>(float(timePoints[y] * 60), float(timePoints[y + 2] * 60), float(segmentCount - (frameCounter % segmentCount)));
-				}
-				meshGroup.position = bezierpp::quadraticBezierCurve(positions[y], positions[y + 1], positions[y + 2], t);
-			}
-			else if (tamPositions - y == 2) {
-				if (frameCounter < segmentCount) {
-					t = bezierpp::invLerp<float>(float(timePoints[y] * 60), float(timePoints[y + 1] * 60), float(frameCounter % segmentCount));
-				}
-				else {
-					t = bezierpp::invLerp<float>(float(timePoints[y] * 60), float(timePoints[y + 1] * 60), float(segmentCount - (frameCounter % segmentCount)));
-				}
-				meshGroup.position = bezierpp::linearBezierCurve(positions[y], positions[y + 1], t);
-			}
-			else
-				return;
-		}
+	double binomial_coefficient(int n, int k) {
+		return factorial(n) / (factorial(k) * factorial(n - k));
 	}
 
-}
-
-void animateSimple(){
-
-	if (frameCounter >= segmentCount)
-		frameCounter = 0;
-
-	int tamPositions = positions.size();
-	float currentTime = frameCounter * (1.0f / 60.0f);
-
-	int x = 0;
-	float t = 0.f;
-
-	for (x = 0; x < timePoints.size() - 1; x++) {
-		if (currentTime >= timePoints[x] && currentTime < timePoints[x + 1]) {
-			break;
+	glm::vec3 bezier_curve(double t) {
+		glm::vec3 result = {0, 0, 0};
+		int n = positions.size() - 1;
+		for(int i = 0; i <= n; i++) {
+			double b = binomial_coefficient(n, i) * std::pow(t, i) * std::pow(1 - t, n - i);
+			result.x += positions[i].x * b;
+			result.y += positions[i].y * b;
+			result.z += positions[i].z * b;
 		}
+		return result;
 	}
-
-	for (int y = 0; y < tamPositions; y += 3)
-	{
-		if (x >= y && x < y + 4)
-		{
-
-			if (frameCounter < (timePoints[y] * 60))
-				continue;
-
-			if (tamPositions - y >= 4) {
-				t = bezierpp::invLerp<float>(float(timePoints[y] * 60), float(timePoints[y + 3] * 60), float(frameCounter % segmentCount));
-				meshGroup.position = bezierpp::cubicBezierCurve(positions[y], positions[y + 1], positions[y + 2], positions[y + 3], t);
-			}
-			else if (tamPositions - y == 3) {
-				t = bezierpp::invLerp<float>(float(timePoints[y] * 60), float(timePoints[y + 2] * 60), float(frameCounter % segmentCount));
-				meshGroup.position = bezierpp::quadraticBezierCurve(positions[y], positions[y + 1], positions[y + 2], t);
-			}
-			else if (tamPositions - y == 2) {
-				t = bezierpp::invLerp<float>(float(timePoints[y] * 60), float(timePoints[y + 1] * 60), float(frameCounter % segmentCount));
-				meshGroup.position = bezierpp::linearBezierCurve(positions[y], positions[y + 1], t);
-			}
-			else
-				return;
-		}
-	}
-}
-
-void update() {
-	meshGroup.update();
-}
 
 };

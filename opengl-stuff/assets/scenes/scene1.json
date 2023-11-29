@@ -2,20 +2,20 @@
 	"scene": {
 		"objects": [
 			{
-				"path": "assets\\obj\\steve\\steve.obj",
-				"initialPosition": [ -2, 0, 0 ],
-				"initialRotation": [ 0, -90, 0 ],
-				"initialScale": [ 1, 0.5, 1 ],
-				"loopedAnimation": [
-					{
-						"time": 0,
-						"position": [ 2, 0, 0 ]
-					},
-					{
-						"time": 1,
-						"position": [ -2, 0, 0 ]
-					}
-				]
+				"path": "assets\\obj\\cube\\cube.obj",
+				"initialRotation": [ 0, 0, 0 ],
+				"initialScale": [ 1, 1, 1 ],
+				"animation": {
+					"positions": [
+						[ 2, 1, 0 ],
+						[ 2, 0, 0 ],
+						[ 0, 0, 0 ],
+						[ 0, 2, 0 ],
+						[ 2, 2, 0 ],
+						[ 2, 1, 0 ]
+					],
+					"duration": 2
+				}
 			}
 		],
 		"light": {
