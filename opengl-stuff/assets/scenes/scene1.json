@@ -2,28 +2,45 @@
 	"scene": {
 		"objects": [
 			{
-				"path": "assets\\obj\\cube\\cube.obj",
-				"initialRotation": [ 0, 0, 0 ],
-				"initialScale": [ 1, 1, 1 ],
+				"path": "assets\\obj\\Unisinos\\NaveET\\NaveET.obj",
+				"initialScale": [ 0.7, 0.7, 0.7 ],
 				"animation": {
 					"positions": [
-						[ 2, 1, 0 ],
-						[ 2, 0, 0 ],
-						[ 0, 0, 0 ],
-						[ 0, 2, 0 ],
+						[ 2, 3, 0 ],
 						[ 2, 2, 0 ],
-						[ 2, 1, 0 ]
+						[ 0, 2, 1 ],
+						[ 0, 4, 1 ],
+						[ 2, 4, 0 ],
+						[ 2, 3, 0 ]
 					],
-					"duration": 2,
+					"rotations": [
+						[ 0, 0, 0 ],
+						[ 0, 360, 0 ]
+					],
+					"duration": 4,
 					"type": "bezier"
+				}
+			},
+			{
+				"path": "assets\\obj\\Unisinos\\Planeta\\Planeta.obj",
+				"initialPosition": [ -3, 0, -8 ],
+				"initialScale": [ 7, 7, 7 ],
+				"animation": {
+					"rotations": [
+						[ 0, 0, 0 ],
+						[ 0, 360, 0 ]
+					],
+					"duration": 240
 				}
 			}
 		],
+		"backgroundColor": [ 0, 0, 0 ],
 		"light": {
-			"color": [ 1, 1, 1 ],
-			"ambientStrength": 0.5,
+			"position": [ 1.2, 5.7, 3.3 ],
+			"color": [ 1, 0.9, 0.8 ],
+			"ambientStrength": 0.2,
 			"difuseStrength": 1.0,
-			"specularStrength": 0.8
+			"specularStrength": 2.0
 		}
 	}
 }

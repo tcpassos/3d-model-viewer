@@ -1,0 +1,31 @@
+{
+	"scene": {
+		"objects": [
+			{
+				"path": "assets\\obj\\city\\untitled.obj"
+			},
+			{
+				"path": "assets\\obj\\rocket\\Toy Rocket.obj",
+				"initialScale": [ 6, 6, 6 ],
+				"animation": {
+					"positions": [
+						[ 0, 0, 0 ],
+						[ 0, 5, 0 ],
+						[ 0, 10, 0 ],
+						[ 0, 20, 0 ],
+						[ 0, 35, 0 ],
+						[ 0, 55, 0 ],
+						[ 0, 80, 0 ],
+						[ 0, 110, 0 ]
+					],
+					"duration": 5
+				}
+			}
+		],
+		"light": {
+			"ambientStrength": 0.2,
+			"difuseStrength": 2.1,
+			"specularStrength": 0.8
+		}
+	}
+}

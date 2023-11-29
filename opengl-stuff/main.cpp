@@ -106,8 +106,6 @@ int main() {
     TextRenderer textRenderer(SCR_WIDTH, SCR_HEIGHT, Font("assets/fonts/Gobold Regular.otf", 11));
     textRenderer.setHorizontalAlignment(TextLeft);
     textRenderer.setColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-    // Background color
-    glm::vec3 backgroundColor = glm::vec3(0.9f, 0.9f, 0.9f);
 
     // -------------------------------------------------------------------
     // Render loop
@@ -119,7 +117,7 @@ int main() {
         processInput(window);
 
         // --------------------------------------------------------------
-        glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
+        glClearColor(scene.backgroundColor.r, scene.backgroundColor.g, scene.backgroundColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -232,7 +230,7 @@ int main() {
         // Scene window
         ImGui::Begin("Scene", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("Background color");
-        ImGui::ColorEdit3("##background_color", (float*)&backgroundColor);
+        ImGui::ColorEdit3("##background_color", (float*)&scene.backgroundColor);
         ImGui::Text("Light position");
         ImGui::DragScalar("X##light_position_x", ImGuiDataType_Float, &scene.light.position.x, 0.01f);
         ImGui::DragScalar("Y##light_position_y", ImGuiDataType_Float, &scene.light.position.y, 0.01f);

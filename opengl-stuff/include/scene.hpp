@@ -15,8 +15,11 @@
 class Scene {
 public:
 	Light light;
+	glm::vec3 backgroundColor;
 	std::vector<Object3D*> objects;
 	std::vector<Animation> animations;
+
+	Scene(): backgroundColor(glm::vec3(0.8f)) { }
 
 	/**
 	 * Parses a JSON file and returns a Scene object.
@@ -24,9 +27,7 @@ public:
 	 * @param jsonFilePath The path to the JSON file.
 	 * @return The Scene object.
 	 */
-	Scene parse(const char* jsonFilePath) {
-		Scene scene;
-
+	void parse(const char* jsonFilePath) {
 		rapidjson::Document doc;
 		std::ifstream file(jsonFilePath);
 		std::string json((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -35,12 +36,12 @@ public:
 		// If the JSON file is invalid, return an empty scene.
 		if (doc.HasParseError()) {
 			std::cerr << "Error parsing scene from JSON: " << doc.GetParseError() << std::endl;
-			return scene;
+			return;
 		}
 		// If the JSON file is empty, return an empty scene.
 		if (!doc.HasMember("scene")) {
 			std::cerr << "Error parsing scene from JSON: \"scene\" member not found" << std::endl;
-			return scene;
+			return;
 		}
 
 		const rapidjson::Value& sceneJson = doc["scene"];
@@ -55,8 +56,11 @@ public:
 			const rapidjson::Value& lightJson = sceneJson["light"];
 			parseLight(lightJson);
 		}
-
-		return scene;
+		// Parse background color
+		if (sceneJson.HasMember("backgroundColor")) {
+			const rapidjson::Value& backgroundColorJson = sceneJson["backgroundColor"];
+			backgroundColor = glm::vec3(backgroundColorJson[0].GetFloat(), backgroundColorJson[1].GetFloat(), backgroundColorJson[2].GetFloat());
+		}
 	}
 
 private:
@@ -113,6 +117,7 @@ private:
 	 */
 	void parseAnimation(const rapidjson::Value& animationJson, TransformableGroup objGroup) {
 		std::vector<glm::vec3> positions;
+		std::vector<glm::vec3> rotations;
 		float duration = 1.0f;
 		AnimationType type = AnimationType_Linear;
 		// Parse positions
@@ -120,6 +125,16 @@ private:
 			const rapidjson::Value& positionsJson = animationJson["positions"];
 			for (auto& p : positionsJson.GetArray()) {
 				positions.push_back(glm::vec3(p[0].GetFloat(), p[1].GetFloat(), p[2].GetFloat()));
+			}
+		}
+		// Parse rotations
+		if (animationJson.HasMember("rotations")) {
+			const rapidjson::Value& rotationsJson = animationJson["rotations"];
+			for (auto& r : rotationsJson.GetArray()) {
+				float rotationX = glm::radians(r[0].GetFloat());
+				float rotationY = glm::radians(r[1].GetFloat());
+				float rotationZ = glm::radians(r[2].GetFloat());
+				rotations.push_back(glm::vec3(rotationX, rotationY, rotationZ));
 			}
 		}
 		// Parse duration
@@ -135,7 +150,9 @@ private:
 				type = AnimationType_Bezier;
 			}
 		}
-		Animation animation(objGroup, positions, duration, type);
+		Animation animation(objGroup, duration, type);
+		animation.positions = positions;
+		animation.rotations = rotations;
 		animations.push_back(animation);
 	}
 	

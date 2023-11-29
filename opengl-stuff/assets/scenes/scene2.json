@@ -18,7 +18,7 @@
 			},
 			{
 				"path": "assets\\obj\\Unisinos\\NaveET\\NaveET.obj",
-				"initialScale": [ 0.4, 0.4, 0.4 ],
+				"initialScale": [ 0.7, 0.7, 0.7 ],
 				"animation": {
 					"positions": [
 						[ 2, 3, 0 ],
@@ -28,14 +28,19 @@
 						[ 2, 4, 0 ],
 						[ 2, 3, 0 ]
 					],
+					"rotations": [
+						[ 0, 0, 0 ],
+						[ 0, 360, 0 ]
+					],
 					"duration": 4,
 					"type": "bezier"
 				}
 			}
 		],
 		"light": {
+			"position": [ 1.2, 5.7, 3.3 ],
 			"color": [ 1, 0.9, 0.8 ],
-			"ambientStrength": 0.6,
+			"ambientStrength": 0.2,
 			"difuseStrength": 1.0,
 			"specularStrength": 2.0
 		}
