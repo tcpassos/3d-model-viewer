@@ -155,7 +155,6 @@
     <ClCompile Include="src\text_renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="animation.hpp" />
     <ClInclude Include="include\animation.hpp" />
     <ClInclude Include="include\bezier.hpp" />
     <ClInclude Include="include\camera.hpp" />
@@ -183,6 +182,7 @@
     <ClInclude Include="include\object_reader.hpp" />
     <ClInclude Include="include\post_processing_pipeline.hpp" />
     <ClInclude Include="include\renderer.hpp" />
+    <ClInclude Include="include\scene.hpp" />
     <ClInclude Include="include\sound.h" />
     <ClInclude Include="include\resource_manager.h" />
     <ClInclude Include="include\shader.h" />

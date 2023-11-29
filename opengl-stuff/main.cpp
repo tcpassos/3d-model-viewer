@@ -11,23 +11,19 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-#include <fstream> 
+#include <fstream>
 
-#include <shader.h>
 #include <camera.hpp>
 #include <font.h>
-#include <light.hpp>
 #include <mesh.hpp>
-#include <object_reader.hpp>
 #include <renderer.hpp>
 #include <resource_manager.h>
+#include <scene.hpp>
+#include <shader.h>
 #include <texture.h>
 #include <text_renderer.h>
 #include <transformable_group.hpp>
-#include <rapidjson/document.h>
-#include <animation.hpp>
 
-using namespace rapidjson;
 using namespace std;
 
 void processInput(GLFWwindow* window);
@@ -52,8 +48,11 @@ bool firstMouse = true;
 // Camera
 Camera camera(glm::vec3(0.0f, 1.0f, 4.0f));
 
-// Light
-Light light;
+// Scene
+Scene scene;
+
+// Selected objects
+TransformableGroup selectedObjects;
 
 // Timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -61,12 +60,6 @@ float lastFrame = 0.0f;
 float animationLastFrame = 0.0f;
 
 int frameCounter = 0;
-
-// Objects
-std::vector<Object3D*> objects;
-TransformableGroup selectedObjects;
-
-std::vector<Animation> animations;
 
 int main() {
     // GLFW: initialize and configure
@@ -108,7 +101,7 @@ int main() {
     ImGui::FileBrowser fileDialog;
     fileDialog.SetTypeFilters({ ".obj", ".json"});
     // Object renderer
-    Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera, light);
+    Renderer renderer(glm::vec2(SCR_WIDTH, SCR_HEIGHT), camera, scene.light);
     // Object reader
     ObjectReader objReader;
     // Text renderer
@@ -142,17 +135,17 @@ int main() {
         textRenderer.renderText("[Right click] Camera", 10.0f, 85.0f);
 
         // Object rendering
-        for (int x = 0; x < objects.size(); x++) {
+        for (int x = 0; x < scene.objects.size(); x++) {
             int renderModes = RenderModes_Normal;
             if (selectedObjects.contains(x)) {
                 renderModes |= RenderModes_Wireframe;
             }
-            renderer.render(*objects[x], renderModes);
+            renderer.render(*scene.objects[x], renderModes);
         }
 
-        if (animations.size() > 0) {
-            for (int x = 0; x < animations.size(); x++) {
-				animations[x].animate(currentFrame);
+        if (scene.animations.size() > 0) {
+            for (int x = 0; x < scene.animations.size(); x++) {
+                scene.animations[x].animate(currentFrame);
 			}
 		}
 
@@ -166,75 +159,15 @@ int main() {
             }
             fileDialog.Display();
             if (fileDialog.HasSelected()) {
-                if (fileDialog.GetSelected().extension().string() == ".obj")
-                {
+                // Object import
+                if (fileDialog.GetSelected().extension().string() == ".obj") {
                     for (Object3D* obj : objReader.readModel(fileDialog.GetSelected().string().c_str()))
-                        objects.push_back(obj);
-                    fileDialog.ClearSelected();
+                        scene.objects.push_back(obj);
+                // JSON scene import
                 } else {
-                    Document doc;
-                    ifstream file(fileDialog.GetSelected().string().c_str());
-                    string json((istreambuf_iterator<char>(file)),
-                                 istreambuf_iterator<char>());
-                    doc.Parse(json.c_str());
-                    if (doc.HasParseError()) {
-                        cerr << "Error parsing JSON: "
-                            << doc.GetParseError() << endl;
-                        return 1;
-                    }
-                    if (doc.HasMember("scene") ) {
-                        const Value& scene = doc["scene"];
-
-                        if (scene.HasMember("objects"))
-                        {
-                            
-                            const Value& objs = scene["objects"];
-                            for (auto& o : objs.GetArray()) {
-                                string filepath = fileDialog.GetSelected().parent_path().parent_path().string() + o["object"].GetString();
-                                TransformableGroup group;
-                                for (Object3D* obj : objReader.readModel(filepath.c_str()))
-                                {
-                                    objects.push_back(obj);
-                                    group.add(objects.size() - 1, objects[objects.size() - 1]);
-                                }
-
-                                if (o.HasMember("loopedAnimation")) {
-									const Value& loopedAnimation = o["loopedAnimation"];
-
-                                    std::vector<float> timePoints;
-                                    std::vector<glm::vec3> positions;
-
-                                    for (auto& a : loopedAnimation.GetArray()) {
-                                        timePoints.push_back(a["time"].GetFloat());
-                                        positions.push_back(glm::vec3(a["position"][0].GetFloat(), a["position"][1].GetFloat(), a["position"][2].GetFloat()));
-									}
-
-                                    Animation animation(group, timePoints, positions, true);
-									animations.push_back(animation);
-                                }
-                                else if (o.HasMember("simpleAnimation"))
-                                {
-                                    const Value& simpleAnimation = o["simpleAnimation"];
-
-                                    std::vector<float> timePoints;
-                                    std::vector<glm::vec3> positions;
-
-                                    for (auto& a : simpleAnimation.GetArray()) {
-                                        timePoints.push_back(a["time"].GetFloat());
-                                        positions.push_back(glm::vec3(a["position"][0].GetFloat(), a["position"][1].GetFloat(), a["position"][2].GetFloat()));
-                                    }
-
-                                    Animation animation(group, timePoints, positions);
-                                    animations.push_back(animation);
-                                }
-                                else
-                                    continue;
-
-                            }
-                        }
-                    }
-                    fileDialog.ClearSelected();
+                    scene.parse(fileDialog.GetSelected().string().c_str());
                 }
+                fileDialog.ClearSelected();
             }
 
             // Object remove button
@@ -245,8 +178,8 @@ int main() {
 
             // List of meshes in scene
             if (ImGui::BeginListBox("##meshes-list", ImVec2(300.0f, 200.0f))) {
-                for (int i = 0; i < objects.size(); i++) {
-                    std::string originalMeshName = objects[i]->mesh.getName();
+                for (int i = 0; i < scene.objects.size(); i++) {
+                    std::string originalMeshName = scene.objects[i]->mesh.getName();
                     std::string meshName = originalMeshName.empty() ? "mesh_" + std::to_string(i) : originalMeshName;
                     if (ImGui::Selectable(meshName.c_str(), selectedObjects.contains(i))) {
                         markMesh(window, i);
@@ -286,15 +219,15 @@ int main() {
         // Lightning window
         ImGui::Begin("Lightning", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
         ImGui::Text("Position");
-        ImGui::DragScalar("X##light_position_x", ImGuiDataType_Float, &light.position.x, 0.01f);
-        ImGui::DragScalar("Y##light_position_y", ImGuiDataType_Float, &light.position.y, 0.01f);
-        ImGui::DragScalar("Z##light_position_z", ImGuiDataType_Float, &light.position.z, 0.01f);
+        ImGui::DragScalar("X##light_position_x", ImGuiDataType_Float, &scene.light.position.x, 0.01f);
+        ImGui::DragScalar("Y##light_position_y", ImGuiDataType_Float, &scene.light.position.y, 0.01f);
+        ImGui::DragScalar("Z##light_position_z", ImGuiDataType_Float, &scene.light.position.z, 0.01f);
         ImGui::Text("Color");
-        ImGui::ColorEdit3("##light_color", (float*)&light.color);
+        ImGui::ColorEdit3("##light_color", (float*)&scene.light.color);
         ImGui::Text("Phong");
-        ImGui::DragScalar("Ambient##ambient_strength", ImGuiDataType_Float, &light.ambientStrength, 0.01f);
-        ImGui::DragScalar("Diffuse##diffuse_strength", ImGuiDataType_Float, &light.diffuseStrength, 0.01f);
-        ImGui::DragScalar("Specular##specular_strength", ImGuiDataType_Float, &light.specularStrength, 0.01f);
+        ImGui::DragScalar("Ambient##ambient_strength", ImGuiDataType_Float, &scene.light.ambientStrength, 0.01f);
+        ImGui::DragScalar("Diffuse##diffuse_strength", ImGuiDataType_Float, &scene.light.diffuseStrength, 0.01f);
+        ImGui::DragScalar("Specular##specular_strength", ImGuiDataType_Float, &scene.light.specularStrength, 0.01f);
         ImGui::End();
 
         // --------------------------------------------------------------
@@ -388,14 +321,14 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     float closestIntersection = std::numeric_limits<float>::max();
     int closestIntersectionIndex = -1;
 
-    for (int x = 0; x < objects.size(); ++x) {
-        glm::mat4 model = objects[x]->getModelMatrix();
+    for (int x = 0; x < scene.objects.size(); ++x) {
+        glm::mat4 model = scene.objects[x]->getModelMatrix();
 
         glm::vec3 worldNear = glm::unProject(glm::vec3(float(cursorX), float(windowHeight - cursorY), 0.0f), view * model, projection, viewport);
         glm::vec3 worldFar = glm::unProject(glm::vec3(float(cursorX), float(windowHeight - cursorY), 1.0f), view * model, projection, viewport);
         glm::vec3 rayDir = glm::normalize(worldFar - worldNear);
 
-        Mesh mesh = objects[x]->mesh;
+        Mesh mesh = scene.objects[x]->mesh;
         std::vector<glm::vec3> verticesData = mesh.getVertices();
         std::vector<GLuint> indices = mesh.getIndices();
 
@@ -530,29 +463,29 @@ void markMesh(GLFWwindow* window, int meshIndex) {
             selectedObjects.remove(meshIndex);
         }
         else {
-            selectedObjects.add(meshIndex, objects[meshIndex]);
+            selectedObjects.add(meshIndex, scene.objects[meshIndex]);
         }
     }
     else {
         selectedObjects.clear();
-        selectedObjects.add(meshIndex, objects[meshIndex]);
+        selectedObjects.add(meshIndex, scene.objects[meshIndex]);
     }
 }
 
 // Delete all selected meshes
 void deleteSelectedObjects() {
-    objects.erase(std::remove_if(objects.begin(), objects.end(), [&](Object3D* objPtr) {
-        int index = std::distance(objects.begin(), std::find(objects.begin(), objects.end(), objPtr));
+    scene.objects.erase(std::remove_if(scene.objects.begin(), scene.objects.end(), [&](Object3D* objPtr) {
+        int index = std::distance(scene.objects.begin(), std::find(scene.objects.begin(), scene.objects.end(), objPtr));
         return selectedObjects.contains(index);
-        }), objects.end());
+        }), scene.objects.end());
     selectedObjects.clear();
 }
 
 // Get the first selected object
 Object3D* getSelectedObject() {
-    for (int x = 0; x < objects.size(); x++) {
+    for (int x = 0; x < scene.objects.size(); x++) {
 		if (selectedObjects.contains(x)) {
-			return objects[x];
+			return scene.objects[x];
 		}
 	}
 }

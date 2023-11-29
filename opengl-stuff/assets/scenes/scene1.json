@@ -2,67 +2,27 @@
 	"scene": {
 		"objects": [
 			{
-				"object": "\\obj\\steve\\steve.obj",
-				"initialPosition": [ 0, 0, 0 ],
-				"initialRotation": [ 0, 0, 0 ],
-				"initialScale": [ 0, 0, 0 ],
+				"path": "assets\\obj\\steve\\steve.obj",
+				"initialPosition": [ -2, 0, 0 ],
+				"initialRotation": [ 0, -90, 0 ],
+				"initialScale": [ 1, 0.5, 1 ],
 				"loopedAnimation": [
 					{
 						"time": 0,
-						"position": [ 10, 0, 0 ]
+						"position": [ 2, 0, 0 ]
 					},
 					{
 						"time": 1,
-						"position": [ 8, 0, 0 ]
-					},
-					{
-						"time": 2,
-						"position": [ -8, 0, 0 ]
-					},
-					{
-						"time": 3,
-						"position": [ -10, 0, 0 ]
-					}
-				]
-			},
-			{
-				"object": "\\obj\\steve\\steve.obj",
-				"initialPosition": [ 0, 0, 0 ],
-				"initialRotation": [ 0, 0, 0 ],
-				"initialScale": [ 0, 0, 0 ],
-				"loopedAnimation": [
-					{
-						"time": 1,
-						"position": [ -10, -5, 0 ]
-					},
-					{
-						"time": 2,
-						"position": [ 10, 10, 10 ]
-					},
-					{
-						"time": 3,
-						"position": [ -10, 0, 0 ]
-					},
-					{
-						"time": 4,
-						"position": [ 10, 0, 10 ]
-					},
-					{
-						"time": 5,
-						"position": [ 10, 0, 0 ]
-					},
-					{
-						"time": 6,
-						"position": [ -10, 0, -10 ]
+						"position": [ -2, 0, 0 ]
 					}
 				]
 			}
 		],
 		"light": {
-			"position": [ 0, 0, 0 ],
-			"ambient": [ 0.2, 0.2, 0.2 ],
-			"difuse": [ 0.8, 0.8, 0.8 ],
-			"specular": [ 0.5, 0.5, 0.5 ]
+			"color": [ 1, 1, 1 ],
+			"ambientStrength": 0.5,
+			"difuseStrength": 1.0,
+			"specularStrength": 0.8
 		}
 	}
 }
