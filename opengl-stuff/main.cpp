@@ -250,9 +250,11 @@ int main() {
         if (selectedObjects.size() == 1) {
             Material* material = &getSelectedObject()->mesh.getMaterial();
             ImGui::Begin("Material", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
-            ImGui::Text("Texture");
-            ImGui::Image((void*)material->texture.id, ImVec2(150.0f, 150.0f));
-            ImGui::Separator();
+            if (material->texture.id != 0) {
+                ImGui::Text("Texture");
+                ImGui::Image((void*)material->texture.id, ImVec2(150.0f, 150.0f));
+                ImGui::Separator();
+            }
             ImGui::ColorEdit3("Ambient##material_ambient", (float*)&material->ambientColor);
             ImGui::ColorEdit3("Diffuse##material_diffuse", (float*)&material->diffuseColor);
             ImGui::ColorEdit3("Specular##material_specular", (float*)&material->specularColor);
