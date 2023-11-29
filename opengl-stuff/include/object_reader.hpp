@@ -97,7 +97,7 @@ private:
         }
 
         // Try to get mesh texture
-        if (mesh->mMaterialIndex >= 0 && mesh->mMaterialIndex < scene->mNumMaterials) {
+        if (mesh->mMaterialIndex >= 0 && mesh->mMaterialIndex < scene->mNumMaterials && mesh->HasTextureCoords(0)) {
             Material material = createMaterial(scene->mMaterials[mesh->mMaterialIndex], objPath);
             return Mesh(vertices, textureCoords, normals, indices, material, mesh->mName.C_Str());
         }
