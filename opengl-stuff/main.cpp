@@ -59,8 +59,6 @@ float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 float animationLastFrame = 0.0f;
 
-int frameCounter = 0;
-
 int main() {
     // GLFW: initialize and configure
     glfwInit();
@@ -143,6 +141,7 @@ int main() {
             renderer.render(*scene.objects[x], renderModes);
         }
 
+        // Animation
         if (scene.animations.size() > 0) {
             for (int x = 0; x < scene.animations.size(); x++) {
                 scene.animations[x].animate(currentFrame);

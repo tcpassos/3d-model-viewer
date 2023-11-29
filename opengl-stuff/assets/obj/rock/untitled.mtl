@@ -1,0 +1,13 @@
+# Blender 4.0.1 MTL File: 'None'
+# www.blender.org
+
+newmtl Rock_Sandstone_rlerz
+Ns 253.952515
+Ka 1.000000 1.000000 1.000000
+Ks 0.555118 0.555118 0.555118
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd Aset_rock_sandstone_S_rlerz_2K_Albedo.jpg
+map_Bump -bm 4.300000 Aset_rock_sandstone_S_rlerz_2K_Normal_LOD0.jpg

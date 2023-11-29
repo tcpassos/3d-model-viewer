@@ -38,7 +38,6 @@ void animate(float frame) {
 	{
 		lastframe = frame;
 		
-
 		if (isLoopAnimation)
 			animateLooped();
 		else
