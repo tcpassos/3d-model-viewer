@@ -181,6 +181,14 @@ int main() {
                 deleteSelectedObjects();
             }
 
+            // Clear scene button
+            ImGui::SameLine();
+            if (ImGui::Button("Clear scene")) {
+                scene.objects.clear();
+                scene.animations.clear();
+                selectedObjects.clear();
+            }
+
             // List of meshes in scene
             if (ImGui::BeginListBox("##meshes-list", ImVec2(300.0f, 200.0f))) {
                 for (int i = 0; i < scene.objects.size(); i++) {
