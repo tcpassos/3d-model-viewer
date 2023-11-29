@@ -15,7 +15,8 @@ struct Light {
 struct Material {
     vec3 ambient;
     vec3 diffuse;
-    vec3 specular;    
+    vec3 specular;  
+    vec3 emissive;
     float shininess;
     float opacity;
 };
@@ -42,6 +43,10 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * (spec * material.specular);
 
-	FragColor = vec4((ambient + diffuse + specular), 1.0) * texture(texBuff, TexCoord);
+    // emissive
+    // not fully implemented yet
+    vec3 emissive = material.emissive;
+
+	FragColor = vec4((ambient + diffuse + specular + emissive), 1.0) * texture(texBuff, TexCoord);
     FragColor.a *= material.opacity;
 }

@@ -8,10 +8,11 @@ public:
 	glm::vec3 ambientColor;
 	glm::vec3 diffuseColor;
 	glm::vec3 specularColor;
+	glm::vec3 emissiveColor;
 	float shininess;
 	float opacity;
 	Texture2D texture;
 
-	Material(): ambientColor(glm::vec3(1.0f)), diffuseColor(glm::vec3(1.0f)), specularColor(glm::vec3(1.0f)), shininess(1.0f), opacity(1.0f) { }
+	Material(): ambientColor(glm::vec3(1.0f)), diffuseColor(glm::vec3(1.0f)), specularColor(glm::vec3(1.0f)), emissiveColor(glm::vec3(1.0f)), shininess(1.0f), opacity(1.0f) { }
 
 };

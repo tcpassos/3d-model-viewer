@@ -73,7 +73,7 @@ private:
 	}
 
 	glm::vec3 linear_interpolation(float t) {
-		int i = t * (positions.size() - 1);
+		int i = (int) (t * (positions.size() - 1));
 		float local_t = t * (positions.size() - 1) - i;
 		return positions[i] * (1 - local_t) + positions[i + 1] * local_t;
 	}

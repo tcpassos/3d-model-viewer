@@ -106,6 +106,8 @@ int main() {
     TextRenderer textRenderer(SCR_WIDTH, SCR_HEIGHT, Font("assets/fonts/Gobold Regular.otf", 11));
     textRenderer.setHorizontalAlignment(TextLeft);
     textRenderer.setColor(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+    // Background color
+    glm::vec3 backgroundColor = glm::vec3(0.9f, 0.9f, 0.9f);
 
     // -------------------------------------------------------------------
     // Render loop
@@ -117,7 +119,7 @@ int main() {
         processInput(window);
 
         // --------------------------------------------------------------
-        glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
+        glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -166,6 +168,10 @@ int main() {
                 } else {
                     scene.parse(fileDialog.GetSelected().string().c_str());
                 }
+                // Sort objects putting the transparent ones at the end
+                std::sort(scene.objects.begin(), scene.objects.end(), [](Object3D* a, Object3D* b) {
+                    return a->mesh.getMaterial().opacity > b->mesh.getMaterial().opacity;
+                });
                 fileDialog.ClearSelected();
             }
 
@@ -215,15 +221,17 @@ int main() {
         }
 
         // --------------------------------------------------------------
-        // Lightning window
-        ImGui::Begin("Lightning", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::Text("Position");
+        // Scene window
+        ImGui::Begin("Scene", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Text("Background color");
+        ImGui::ColorEdit3("##background_color", (float*)&backgroundColor);
+        ImGui::Text("Light position");
         ImGui::DragScalar("X##light_position_x", ImGuiDataType_Float, &scene.light.position.x, 0.01f);
         ImGui::DragScalar("Y##light_position_y", ImGuiDataType_Float, &scene.light.position.y, 0.01f);
         ImGui::DragScalar("Z##light_position_z", ImGuiDataType_Float, &scene.light.position.z, 0.01f);
-        ImGui::Text("Color");
+        ImGui::Text("Light color");
         ImGui::ColorEdit3("##light_color", (float*)&scene.light.color);
-        ImGui::Text("Phong");
+        ImGui::Text("Phong parameters");
         ImGui::DragScalar("Ambient##ambient_strength", ImGuiDataType_Float, &scene.light.ambientStrength, 0.01f);
         ImGui::DragScalar("Diffuse##diffuse_strength", ImGuiDataType_Float, &scene.light.diffuseStrength, 0.01f);
         ImGui::DragScalar("Specular##specular_strength", ImGuiDataType_Float, &scene.light.specularStrength, 0.01f);
@@ -237,6 +245,7 @@ int main() {
             ImGui::ColorEdit3("Ambient##material_ambient", (float*)&material->ambientColor);
             ImGui::ColorEdit3("Diffuse##material_diffuse", (float*)&material->diffuseColor);
             ImGui::ColorEdit3("Specular##material_specular", (float*)&material->specularColor);
+            ImGui::ColorEdit3("Emissive##material_emissive", (float*)&material->emissiveColor);
             ImGui::DragScalar("Shininess##material_shininess", ImGuiDataType_Float, &material->shininess, 0.01f);
             ImGui::DragScalar("Opacity##material_opacity", ImGuiDataType_Float, &material->opacity, 0.01f);
             ImGui::End();

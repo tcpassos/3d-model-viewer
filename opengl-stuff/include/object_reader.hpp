@@ -137,6 +137,7 @@ private:
         aiColor3D ambientColor(1.f, 1.f, 1.f);
         aiColor3D diffuseColor(1.f, 1.f, 1.f);
         aiColor3D specularColor(1.f, 1.f, 1.f);
+        aiColor3D emissiveColor(0.f, 0.f, 0.f);
         float shininess;
         float opacity;
 
@@ -147,17 +148,14 @@ private:
 			}
         }
         if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor)) {
-            glm::vec3 diffuseColorVec = glm::vec3(diffuseColor.r, diffuseColor.g, diffuseColor.b);
-            if (diffuseColorVec != glm::vec3(0.0f)) {
-				mat.diffuseColor = glm::vec3(diffuseColor.r, diffuseColor.g, diffuseColor.b);
-            }
+			mat.diffuseColor = glm::vec3(diffuseColor.r, diffuseColor.g, diffuseColor.b);
         }
         if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_SPECULAR, specularColor)) {
-            glm::vec3 specularColorVec = glm::vec3(specularColor.r, specularColor.g, specularColor.b);
-            if (specularColorVec != glm::vec3(0.0f)) {
-                mat.specularColor = glm::vec3(specularColor.r, specularColor.g, specularColor.b);
-            }
+            mat.specularColor = glm::vec3(specularColor.r, specularColor.g, specularColor.b);
         }
+        if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor)) {
+			mat.emissiveColor = glm::vec3(emissiveColor.r, emissiveColor.g, emissiveColor.b);
+		}
         if (AI_SUCCESS == material->Get(AI_MATKEY_SHININESS, shininess))
             mat.shininess = shininess == 0.0f ? 1.0f : shininess;
         if (AI_SUCCESS == material->Get(AI_MATKEY_OPACITY, opacity))
