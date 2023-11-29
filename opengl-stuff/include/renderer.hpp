@@ -37,12 +37,17 @@ public:
     void render(Object3D& object, RenderModes renderModes = RenderModes_Normal) {
         // Calculate projection
         glm::mat4 projection = glm::perspective(glm::radians(camera->cameraZoom), (float)screenDimensions.x / (float)screenDimensions.y, 0.1f, 500.0f);
+        // Calculate light position in world space
+        // Necessary to calculate light position in world space because the object is translated and rotated
+        glm::mat4 model = object.getModelMatrix();
+        glm::mat4 inverseModel = glm::inverse(model);
+        glm::vec4 lightPositionWorldSpace = inverseModel * glm::vec4(light->position, 1.0);
         // Setup shader
         shader.use();
         shader.setMatrix4("projection", projection);
         shader.setMatrix4("view", camera->getViewMatrix());
-        shader.setMatrix4("model", object.getModelMatrix());
-        shader.setVector3f("light.position", light->position);
+        shader.setMatrix4("model", model);
+        shader.setVector3f("light.position", glm::vec3(lightPositionWorldSpace));
         shader.setVector3f("light.ambient", light->color * light->ambientStrength);
         shader.setVector3f("light.diffuse", light->color * light->diffuseStrength);
         shader.setVector3f("light.specular", light->color * light->specularStrength);
