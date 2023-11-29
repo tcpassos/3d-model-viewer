@@ -250,6 +250,9 @@ int main() {
         if (selectedObjects.size() == 1) {
             Material* material = &getSelectedObject()->mesh.getMaterial();
             ImGui::Begin("Material", (bool*)0, ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::Text("Texture");
+            ImGui::Image((void*)material->texture.id, ImVec2(150.0f, 150.0f));
+            ImGui::Separator();
             ImGui::ColorEdit3("Ambient##material_ambient", (float*)&material->ambientColor);
             ImGui::ColorEdit3("Diffuse##material_diffuse", (float*)&material->diffuseColor);
             ImGui::ColorEdit3("Specular##material_specular", (float*)&material->specularColor);
@@ -424,7 +427,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 // Internal functions
 // ================================================================================================
 
-// Möller–Trumbore intersection algorithm
+// Mï¿½llerï¿½Trumbore intersection algorithm
 static bool rayIntersectsTriangle(const glm::vec3& origin, const glm::vec3& dir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float* intersection) {
     const float epsilon = 0.000001f;
 

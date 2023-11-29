@@ -186,7 +186,6 @@
     <ClInclude Include="include\resource_manager.h" />
     <ClInclude Include="include\shader.h" />
     <ClInclude Include="include\shape.hpp" />
-    <ClInclude Include="include\sprite.hpp" />
     <ClInclude Include="include\texture.h" />
     <ClInclude Include="include\text_renderer.h" />
     <ClInclude Include="include\transformable.hpp" />

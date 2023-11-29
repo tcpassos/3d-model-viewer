@@ -86,9 +86,6 @@
     <ClInclude Include="include\resource_manager.h">
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>
-    <ClInclude Include="include\sprite.hpp">
-      <Filter>Arquivos de Cabeçalho</Filter>
-    </ClInclude>
     <ClInclude Include="include\shape.hpp">
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>
